@@ -267,6 +267,32 @@
     padding:20px 20px 18px;
     margin-bottom:12px;
   }
+  .res-modifiers{
+    margin-bottom:12px;
+  }
+  .res-modifiers-title{
+    font-size:11.5px;
+    font-weight:700;
+    color:var(--muted);
+    letter-spacing:.04em;
+    margin-bottom:10px;
+  }
+  .modifier-item{
+    background:linear-gradient(135deg, var(--kando-bg), var(--shinnen-bg));
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:16px 18px;
+  }
+  .modifier-item .modifier-name{
+    font-size:15px;
+    font-weight:900;
+  }
+  .modifier-item .modifier-desc{
+    font-size:12.5px;
+    color:var(--sub);
+    margin-top:6px;
+    line-height:1.75;
+  }
   .res-axes-title{
     font-size:11.5px;
     font-weight:700;
@@ -615,6 +641,14 @@
       <div class="res-score-card">
         <div class="label">白木理解度</div>
         <div class="value val-und"><span id="res-und">0</span><small>%</small></div>
+      </div>
+    </div>
+
+    <div class="res-modifiers">
+      <div class="res-modifiers-title">称号</div>
+      <div class="modifier-item">
+        <div class="modifier-name" id="modifier-name"></div>
+        <div class="modifier-desc" id="modifier-desc"></div>
       </div>
     </div>
 
@@ -1932,6 +1966,13 @@ const MODIFIERS = {
   LL: "のびしろ・"        // 適合度Low・理解度Low
 };
 
+const MODIFIER_DESC = {
+  HH: "適合度・理解度ともに高い、白木を深く知り尽くし、白木との相性も抜群。かなりすごい。白木と共通している点が多く、白木が助けられる場面が多いはず。",
+  HL: "白木のことをよく理解しているが、白木が喜ぶポイントまではまだ掴みきれていないところがある。個人的には理解してくれているだけでうれしいです。",
+  LH: "白木が何を喜ぶかはよく分かっているが、白木自身の傾向とはまだズレがあるかも。ただ、僕自身の考えを押し付けるつもりは全然ないので特に気にする点はない。理解者であるだけでうれしいかも。",
+  LL: "まだ白木のことをあまり理解できていないかも？時間とともにお互いの理解をさらに深めていこう。みんなちがってみんないい。"
+};
+
 const FIT_THRESHOLD = 62;
 const UND_THRESHOLD = 65;
 
@@ -1956,6 +1997,11 @@ function renderResult({ fitPct, undPct, axisPct, type }){
   document.getElementById("res-feature").textContent = type.feature;
   document.getElementById("res-fit").textContent = fitPct;
   document.getElementById("res-und").textContent = undPct;
+
+  const mKey = modifierKey(fitPct, undPct);
+  const mName = (MODIFIERS[mKey] || "").replace(/・$/, "");
+  document.getElementById("modifier-name").textContent = mName;
+  document.getElementById("modifier-desc").textContent = MODIFIER_DESC[mKey] || "";
 
   ["shinnen","shusei","kyorikan","kando"].forEach((k) => {
     document.getElementById("bar-" + k).style.width = axisPct[k] + "%";
