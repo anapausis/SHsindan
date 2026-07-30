@@ -552,6 +552,65 @@
     cursor:pointer;
   }
 
+  /* ---- History ---- */
+  .btn-history{
+    display:block;
+    width:100%;
+    border:1px solid var(--line-strong);
+    background:transparent;
+    color:var(--ink);
+    font-family:inherit;
+    font-weight:700;
+    font-size:14.5px;
+    padding:16px 20px;
+    border-radius:99px;
+    cursor:pointer;
+    margin-top:10px;
+  }
+  .history-list{
+    display:grid;
+    gap:8px;
+    margin-bottom:20px;
+  }
+  .history-item{
+    width:100%;
+    text-align:left;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px 16px;
+    font-family:inherit;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .history-item:hover{border-color:var(--line-strong);}
+  .history-item .history-date{
+    font-size:10.5px;
+    color:var(--muted);
+    font-weight:700;
+  }
+  .history-item .history-name{
+    font-size:14px;
+    font-weight:700;
+    margin-top:3px;
+  }
+  .history-item .history-scores{
+    font-size:11px;
+    color:var(--muted);
+    white-space:nowrap;
+    flex-shrink:0;
+    text-align:right;
+  }
+  .history-empty{
+    text-align:center;
+    color:var(--muted);
+    font-size:13px;
+    padding:30px 0;
+  }
+
   @media (max-width:380px){
     .intro-axes{grid-template-columns:1fr;}
   }
@@ -598,7 +657,15 @@
     </div>
 
     <button class="btn-start" id="btn-start">診断をはじめる</button>
+    <button class="btn-history hidden" id="btn-history">前回の結果を見る</button>
     <button class="debug-entry hidden" id="debug-entry">デバッグ: 全タイプ一覧</button>
+  </section>
+
+  <!-- ============ HISTORY LIST ============ -->
+  <section id="screen-history" class="hidden">
+    <div class="debug-title">これまでの結果</div>
+    <div class="history-list" id="history-list"></div>
+    <button class="debug-back" id="history-back-to-intro">診断トップに戻る</button>
   </section>
 
   <!-- ============ DEBUG LIST ============ -->
@@ -704,6 +771,7 @@
     <div class="res-actions">
       <button class="btn-share" id="btn-share">結果を共有する</button>
       <button class="btn-retry" id="btn-retry">もう一度診断する</button>
+      <button class="debug-back hidden" id="btn-back-to-history">履歴に戻る</button>
       <button class="debug-back hidden" id="btn-back-to-debug">デバッグ一覧に戻る</button>
     </div>
   </section>
@@ -1948,6 +2016,7 @@ function finishDiagnosis(){
   const code = axisLetter.shinnen + axisLetter.shusei + axisLetter.kyorikan + axisLetter.kando;
   const type = TYPES.find(t => t.code === code) || TYPES[0];
 
+  saveHistory({ fitPct, undPct, axisPct, code });
   renderResult({ fitPct, undPct, axisPct, type });
 }
 
@@ -2119,6 +2188,100 @@ function showToast(msg){
   setTimeout(() => t.classList.remove("show"), 1800);
 }
 
+/* ====== HISTORY (localStorage) ====== */
+const HISTORY_KEY = "shiraki_match_history_v1";
+const HISTORY_MAX = 50;
+const screenHistory = document.getElementById("screen-history");
+let cameFromHistory = false;
+
+function loadHistory(){
+  try{
+    const raw = localStorage.getItem(HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){
+    return [];
+  }
+}
+
+function saveHistory(entry){
+  try{
+    const list = loadHistory();
+    list.unshift({ ...entry, ts: Date.now() });
+    while (list.length > HISTORY_MAX) list.pop();
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+    updateHistoryButtonVisibility();
+  }catch(e){
+    // localStorageが使えない環境では保存をスキップ
+  }
+}
+
+function updateHistoryButtonVisibility(){
+  const btn = document.getElementById("btn-history");
+  const hasHistory = loadHistory().length > 0;
+  btn.classList.toggle("hidden", !hasHistory);
+}
+
+function formatHistoryDate(ts){
+  const d = new Date(ts);
+  const mm = d.getMonth() + 1;
+  const dd = d.getDate();
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mi = String(d.getMinutes()).padStart(2, "0");
+  return mm + "/" + dd + " " + hh + ":" + mi;
+}
+
+document.getElementById("btn-history").addEventListener("click", () => {
+  showHistoryList();
+});
+
+document.getElementById("history-back-to-intro").addEventListener("click", () => {
+  screenHistory.classList.add("hidden");
+  screenIntro.classList.remove("hidden");
+});
+
+document.getElementById("btn-back-to-history").addEventListener("click", () => {
+  screenResult.classList.add("hidden");
+  showHistoryList();
+});
+
+function showHistoryList(){
+  screenIntro.classList.add("hidden");
+  screenQuestion.classList.add("hidden");
+  screenResult.classList.add("hidden");
+  screenHistory.classList.remove("hidden");
+
+  const list = loadHistory();
+  const container = document.getElementById("history-list");
+  container.innerHTML = "";
+
+  if (list.length === 0){
+    container.innerHTML = '<div class="history-empty">まだ診断結果がありません</div>';
+  } else {
+    list.forEach((entry) => {
+      const type = typeByCode(entry.code);
+      if (!type) return;
+      const item = document.createElement("button");
+      item.className = "history-item";
+      item.innerHTML =
+        '<div>' +
+          '<div class="history-date">' + formatHistoryDate(entry.ts) + '</div>' +
+          '<div class="history-name">' + decoratedTypeName(entry.fitPct, entry.undPct, type.name) + '</div>' +
+        '</div>' +
+        '<div class="history-scores">適合' + entry.fitPct + '% / 理解' + entry.undPct + '%</div>';
+      item.addEventListener("click", () => {
+        cameFromHistory = true;
+        screenHistory.classList.add("hidden");
+        renderResult({ fitPct: entry.fitPct, undPct: entry.undPct, axisPct: entry.axisPct, type });
+        document.getElementById("btn-back-to-history").classList.remove("hidden");
+      });
+      container.appendChild(item);
+    });
+  }
+  window.scrollTo({top:0, behavior:"instant" in window ? "instant" : "auto"});
+}
+
+updateHistoryButtonVisibility();
+
 /* ====== DEBUG MODE (URL: ?debug=1) ====== */
 const screenDebug = document.getElementById("screen-debug");
 const isDebug = new URLSearchParams(window.location.search).get("debug") === "1";
@@ -2179,7 +2342,9 @@ function previewType(type){
 
 document.getElementById("btn-retry").addEventListener("click", () => {
   document.getElementById("btn-back-to-debug").classList.add("hidden");
+  document.getElementById("btn-back-to-history").classList.add("hidden");
   cameFromDebug = false;
+  cameFromHistory = false;
 });
 
 </script>
