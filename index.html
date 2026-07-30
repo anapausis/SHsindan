@@ -1917,12 +1917,41 @@ function finishDiagnosis(){
   renderResult({ fitPct, undPct, axisPct, type });
 }
 
+/* ====== TITLE MODIFIER (適合度×理解度による称号) ====== */
+// 閾値はランダム回答10万試行のシミュレーションに基づく実測値:
+// 適合度と理解度は採点の甘さが異なり(理解度の方が高く出やすい)、
+// 同一閾値(50%)だと分布が大きく偏ったため、各指標の中央値を個別の閾値に採用した。
+// 適合度: High=53%以上 / Low=53%未満
+// 理解度: High=58%以上 / Low=58%未満
+// キーの1文字目=適合度、2文字目=理解度（2×2=4パターン、順序を区別する）
+const MODIFIERS = {
+  HH: "ゴッド・オブ・",   // 適合度High・理解度High
+  HL: "相棒・",           // 適合度High・理解度Low
+  LH: "よき理解者・",     // 適合度Low・理解度High
+  LL: "のびしろ・"        // 適合度Low・理解度Low
+};
+
+const FIT_THRESHOLD = 53;
+const UND_THRESHOLD = 58;
+
+function modifierKey(fitPct, undPct){
+  const ft = fitPct >= FIT_THRESHOLD ? "H" : "L";
+  const ut = undPct >= UND_THRESHOLD ? "H" : "L";
+  return ft + ut;
+}
+
+function decoratedTypeName(fitPct, undPct, typeName){
+  const key = modifierKey(fitPct, undPct);
+  const prefix = MODIFIERS[key] || "";
+  return prefix + typeName;
+}
+
 function renderResult({ fitPct, undPct, axisPct, type }){
   screenQuestion.classList.add("hidden");
   screenResult.classList.remove("hidden");
 
   document.getElementById("res-typecode").textContent = "TYPE " + type.code;
-  document.getElementById("res-name").textContent = type.name;
+  document.getElementById("res-name").textContent = decoratedTypeName(fitPct, undPct, type.name);
   document.getElementById("res-feature").textContent = type.feature;
   document.getElementById("res-fit").textContent = fitPct;
   document.getElementById("res-und").textContent = undPct;
@@ -2004,7 +2033,7 @@ document.getElementById("btn-share").addEventListener("click", async () => {
   if (!r) return;
   const text =
 `【白木適合度診断】
-${r.type.name} (TYPE ${r.type.code})
+${decoratedTypeName(r.fitPct, r.undPct, r.type.name)} (TYPE ${r.type.code})
 
 白木適合度: ${r.fitPct}%
 白木理解度: ${r.undPct}%
