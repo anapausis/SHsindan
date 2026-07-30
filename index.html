@@ -1918,11 +1918,12 @@ function finishDiagnosis(){
 }
 
 /* ====== TITLE MODIFIER (適合度×理解度による称号) ====== */
-// 閾値はランダム回答10万試行のシミュレーションに基づく実測値:
-// 適合度と理解度は採点の甘さが異なり(理解度の方が高く出やすい)、
-// 同一閾値(50%)だと分布が大きく偏ったため、各指標の中央値を個別の閾値に採用した。
-// 適合度: High=53%以上 / Low=53%未満
-// 理解度: High=58%以上 / Low=58%未満
+// 閾値はシミュレーションに基づく実測値:
+// 「タイプ判定(4軸のH/L)」と「適合度/理解度」は同じ32問の回答から算出されるため、
+// 単純な中央値ベースの閾値ではタイプが白木颯人(HHHH)になった人のほぼ全員が
+// そのままゴッド・オブも満たしてしまい、称号として機能しなかった。
+// HHHH確定者のうち約25%がゴッド・オブになるよう、80万試行のシミュレーションで
+// 閾値をcalibrationした結果: 適合度=62%以上 / 理解度=65%以上（HHHH内でのHH率 約24.5%）。
 // キーの1文字目=適合度、2文字目=理解度（2×2=4パターン、順序を区別する）
 const MODIFIERS = {
   HH: "ゴッド・オブ・",   // 適合度High・理解度High
@@ -1931,8 +1932,8 @@ const MODIFIERS = {
   LL: "のびしろ・"        // 適合度Low・理解度Low
 };
 
-const FIT_THRESHOLD = 53;
-const UND_THRESHOLD = 58;
+const FIT_THRESHOLD = 62;
+const UND_THRESHOLD = 65;
 
 function modifierKey(fitPct, undPct){
   const ft = fitPct >= FIT_THRESHOLD ? "H" : "L";
