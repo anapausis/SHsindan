@@ -1,1736 +1,1846 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>白木適合度診断 | SHIRAKI MATCH</title>
-<style>
-  :root{
-    --bg:#FCFBF8;
-    --card:#FFFFFF;
-    --ink:#1C1B1A;
-    --sub:#6B6A64;
-    --muted:#8A8A85;
-    --line:#EAE8E1;
-    --line-strong:#D8D6CC;
-    --shinnen:#FF5A36;
-    --shinnen-bg:#FFF0EB;
-    --shusei:#2F6FED;
-    --shusei-bg:#EAF1FE;
-    --kyorikan:#00B37E;
-    --kyorikan-bg:#E5F9F1;
-    --kando:#B24BF3;
-    --kando-bg:#F6EAFE;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    background:var(--bg);
-    color:var(--ink);
-    font-family:"Zen Kaku Gothic New","Noto Sans JP",system-ui,-apple-system,"Segoe UI",sans-serif;
-    min-height:100vh;
-    -webkit-font-smoothing:antialiased;
-  }
-  .app{
-    width:min(560px, calc(100% - 32px));
-    margin:0 auto;
-    padding:28px 0 64px;
-  }
-  .hidden{display:none !important;}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>白木適合度診断 | SHIRAKI MATCH</title>
+  <style>
+    :root {
+      --bg: #FCFBF8;
+      --card: #FFFFFF;
+      --ink: #1C1B1A;
+      --sub: #6B6A64;
+      --muted: #8A8A85;
+      --line: #EAE8E1;
+      --line-strong: #D8D6CC;
+      --shinnen: #FF5A36;
+      --shinnen-bg: #FFF0EB;
+      --shusei: #2F6FED;
+      --shusei-bg: #EAF1FE;
+      --kyorikan: #00B37E;
+      --kyorikan-bg: #E5F9F1;
+      --kando: #B24BF3;
+      --kando-bg: #F6EAFE;
+    }
 
-  /* ---- Header / brand ---- */
-  .brand{
-    display:flex;
-    align-items:baseline;
-    justify-content:space-between;
-    margin-bottom:28px;
-  }
-  .brand-mark{
-    font-weight:900;
-    font-size:14px;
-    letter-spacing:.14em;
-    color:var(--ink);
-  }
-  .brand-sub{
-    font-size:11px;
-    color:var(--muted);
-    letter-spacing:.08em;
-  }
+    * {
+      box-sizing: border-box;
+    }
 
-  /* ---- Intro screen ---- */
-  .intro-hero{
-    text-align:center;
-    padding:36px 8px 8px;
-  }
-  .intro-eyebrow{
-    font-size:12px;
-    font-weight:700;
-    letter-spacing:.14em;
-    color:var(--muted);
-  }
-  .intro-title{
-    font-size:clamp(2.2rem, 10vw, 3.4rem);
-    font-weight:900;
-    line-height:1.05;
-    margin:16px 0 8px;
-    letter-spacing:-.03em;
-  }
-  .intro-title span{
-    display:block;
-    background:linear-gradient(90deg, var(--shinnen), var(--kando));
-    -webkit-background-clip:text;
-    background-clip:text;
-    color:transparent;
-  }
-  .intro-desc{
-    color:var(--sub);
-    line-height:1.85;
-    font-size:14.5px;
-    max-width:400px;
-    margin:18px auto 30px;
-  }
-  .intro-axes{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-    margin:0 0 30px;
-  }
-  .intro-axis{
-    border:1px solid var(--line);
-    border-radius:14px;
-    padding:14px 12px;
-    text-align:left;
-  }
-  .intro-axis .dot{
-    width:8px;height:8px;border-radius:50%;
-    display:inline-block;margin-right:6px;
-  }
-  .intro-axis .label{
-    font-size:13px;font-weight:700;
-  }
-  .intro-axis .desc{
-    font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.5;
-  }
-  .intro-meta{
-    display:flex;justify-content:center;gap:18px;
-    font-size:12px;color:var(--muted);margin-bottom:28px;
-  }
-  .btn-start{
-    display:block;
-    width:100%;
-    border:0;
-    background:var(--ink);
-    color:var(--bg);
-    font-family:inherit;
-    font-weight:700;
-    font-size:16px;
-    padding:18px 20px;
-    border-radius:99px;
-    cursor:pointer;
-    transition:transform .15s ease, opacity .15s ease;
-  }
-  .btn-start:active{transform:scale(.98);}
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+    }
 
-  /* ---- Question screen ---- */
-  .qtop{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-bottom:14px;
-    font-size:12px;
-    color:var(--muted);
-    font-weight:700;
-  }
-  .qprogress-track{
-    height:6px;
-    background:var(--line);
-    border-radius:99px;
-    overflow:hidden;
-    margin-bottom:26px;
-  }
-  .qprogress-fill{
-    height:100%;
-    width:0%;
-    background:var(--ink);
-    transition:width .3s ease;
-  }
-  .qtext{
-    font-size:clamp(1.15rem, 5vw, 1.5rem);
-    font-weight:700;
-    line-height:1.6;
-    margin:12px 0 26px;
-    white-space:pre-wrap;
-  }
-  .qoptions{
-    display:grid;
-    gap:10px;
-  }
-  .qoption{
-    width:100%;
-    text-align:left;
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:16px;
-    padding:16px 18px;
-    font-family:inherit;
-    font-size:14.5px;
-    font-weight:500;
-    line-height:1.55;
-    color:var(--ink);
-    cursor:pointer;
-    transition:border-color .15s ease, background .15s ease, transform .1s ease;
-  }
-  .qoption:hover{
-    border-color:var(--line-strong);
-    background:#FAFAF7;
-  }
-  .qoption:active{transform:scale(.99);}
-  .qback{
-    margin-top:22px;
-    text-align:center;
-  }
-  .qback button{
-    background:none;
-    border:0;
-    color:var(--muted);
-    font-size:12.5px;
-    font-family:inherit;
-    cursor:pointer;
-    padding:8px;
-  }
-  .qback button:hover{color:var(--ink);}
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Zen Kaku Gothic New", "Noto Sans JP", system-ui, -apple-system, "Segoe UI", sans-serif;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
 
-  /* ---- Result screen ---- */
-  .res-eyebrow{
-    text-align:center;
-    font-size:12px;
-    font-weight:700;
-    letter-spacing:.12em;
-    color:var(--muted);
-  }
-  .res-typecode{
-    display:block;
-    text-align:center;
-    font-size:11px;
-    color:var(--muted);
-    margin-top:8px;
-    letter-spacing:.06em;
-  }
-  .res-name{
-    text-align:center;
-    font-size:clamp(1.8rem, 8vw, 2.6rem);
-    font-weight:900;
-    line-height:1.2;
-    margin:12px 0 14px;
-    letter-spacing:-.02em;
-  }
-  .res-feature{
-    text-align:center;
-    color:var(--sub);
-    font-size:14px;
-    line-height:1.85;
-    max-width:400px;
-    margin:0 auto 28px;
-  }
-  .res-scores{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-    margin-bottom:12px;
-  }
-  .res-score-card{
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:16px;
-    padding:18px;
-    text-align:center;
-  }
-  .res-score-card .label{
-    font-size:11.5px;
-    font-weight:700;
-    color:var(--muted);
-    letter-spacing:.04em;
-  }
-  .res-score-card .value{
-    font-size:32px;
-    font-weight:900;
-    margin-top:6px;
-  }
-  .res-score-card .value small{font-size:16px;font-weight:700;}
-  .val-fit{color:var(--shinnen);}
-  .val-und{color:var(--shusei);}
+    .app {
+      width: min(560px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 64px;
+    }
 
-  .res-axes{
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:16px;
-    padding:20px 20px 18px;
-    margin-bottom:12px;
-  }
-  .res-axes-title{
-    font-size:11.5px;
-    font-weight:700;
-    color:var(--muted);
-    letter-spacing:.04em;
-    margin-bottom:16px;
-  }
-  .axis-row{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-bottom:14px;
-  }
-  .axis-row:last-child{margin-bottom:0;}
-  .axis-row .axis-label{
-    width:48px;
-    font-size:12.5px;
-    font-weight:700;
-    flex-shrink:0;
-  }
-  .axis-row .bar-track{
-    flex:1;
-    height:8px;
-    background:#F2F1EC;
-    border-radius:99px;
-    overflow:hidden;
-  }
-  .axis-row .bar-fill{
-    height:100%;
-    border-radius:99px;
-    transition:width .5s ease;
-  }
-  .axis-row .axis-val{
-    width:30px;
-    text-align:right;
-    font-size:12px;
-    color:var(--muted);
-    flex-shrink:0;
-  }
+    .hidden {
+      display: none !important;
+    }
 
-  .res-detail{
-    display:grid;
-    gap:10px;
-    margin-bottom:20px;
-  }
-  .res-detail-item{
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:16px;
-    padding:16px 18px;
-  }
-  .res-detail-item .dt{
-    font-size:11.5px;
-    font-weight:700;
-    color:var(--muted);
-    letter-spacing:.04em;
-    margin-bottom:6px;
-  }
-  .res-detail-item .dd{
-    font-size:13.5px;
-    line-height:1.75;
-    color:var(--ink);
-  }
+    /* ---- Header / brand ---- */
+    .brand {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
 
-  .res-actions{
-    display:grid;
-    gap:10px;
-  }
-  .btn-share{
-    display:block;
-    width:100%;
-    border:0;
-    background:var(--ink);
-    color:var(--bg);
-    font-family:inherit;
-    font-weight:700;
-    font-size:14.5px;
-    padding:16px 20px;
-    border-radius:99px;
-    cursor:pointer;
-    transition:transform .15s ease;
-  }
-  .btn-share:active{transform:scale(.98);}
-  .btn-retry{
-    display:block;
-    width:100%;
-    border:1px solid var(--line-strong);
-    background:transparent;
-    color:var(--ink);
-    font-family:inherit;
-    font-weight:700;
-    font-size:14.5px;
-    padding:16px 20px;
-    border-radius:99px;
-    cursor:pointer;
-  }
+    .brand-mark {
+      font-weight: 900;
+      font-size: 14px;
+      letter-spacing: .14em;
+      color: var(--ink);
+    }
 
-  .toast{
-    position:fixed;
-    left:50%;
-    bottom:28px;
-    transform:translateX(-50%) translateY(12px);
-    background:var(--ink);
-    color:var(--bg);
-    padding:12px 20px;
-    border-radius:99px;
-    font-size:13px;
-    font-weight:700;
-    opacity:0;
-    pointer-events:none;
-    transition:.22s ease;
-  }
-  .toast.show{
-    opacity:1;
-    transform:translateX(-50%) translateY(0);
-  }
+    .brand-sub {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: .08em;
+    }
 
-  .footer{
-    text-align:center;
-    color:var(--muted);
-    font-size:11px;
-    margin-top:36px;
-    letter-spacing:.04em;
-  }
+    /* ---- Intro screen ---- */
+    .intro-hero {
+      text-align: center;
+      padding: 36px 8px 8px;
+    }
 
-  /* ---- Debug ---- */
-  .debug-entry{
-    display:block;
-    text-align:center;
-    margin-top:14px;
-    font-size:11.5px;
-    color:var(--muted);
-    text-decoration:underline;
-    cursor:pointer;
-    background:none;
-    border:0;
-    width:100%;
-    font-family:inherit;
-  }
-  .debug-title{
-    font-size:13px;
-    font-weight:700;
-    color:var(--muted);
-    letter-spacing:.06em;
-    margin-bottom:16px;
-  }
-  .debug-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-    margin-bottom:20px;
-  }
-  .debug-card{
-    text-align:left;
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:14px;
-    padding:14px;
-    cursor:pointer;
-    font-family:inherit;
-  }
-  .debug-card:hover{border-color:var(--line-strong);}
-  .debug-card .code{
-    font-size:10.5px;
-    color:var(--muted);
-    font-weight:700;
-    letter-spacing:.04em;
-  }
-  .debug-card .name{
-    font-size:14px;
-    font-weight:700;
-    margin-top:4px;
-    line-height:1.4;
-  }
-  .debug-back{
-    display:block;
-    width:100%;
-    border:1px solid var(--line-strong);
-    background:transparent;
-    color:var(--ink);
-    font-family:inherit;
-    font-weight:700;
-    font-size:13.5px;
-    padding:14px 20px;
-    border-radius:99px;
-    cursor:pointer;
-  }
+    .intro-eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      color: var(--muted);
+    }
 
-  @media (max-width:380px){
-    .intro-axes{grid-template-columns:1fr;}
-  }
-</style>
+    .intro-title {
+      font-size: clamp(2.2rem, 10vw, 3.4rem);
+      font-weight: 900;
+      line-height: 1.05;
+      margin: 16px 0 8px;
+      letter-spacing: -.03em;
+    }
+
+    .intro-title span {
+      display: block;
+      background: linear-gradient(90deg, var(--shinnen), var(--kando));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .intro-desc {
+      color: var(--sub);
+      line-height: 1.85;
+      font-size: 14.5px;
+      max-width: 400px;
+      margin: 18px auto 30px;
+    }
+
+    .intro-axes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 0 0 30px;
+    }
+
+    .intro-axis {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 12px;
+      text-align: left;
+    }
+
+    .intro-axis .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+    }
+
+    .intro-axis .label {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .intro-axis .desc {
+      font-size: 11.5px;
+      color: var(--muted);
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    .intro-meta {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+
+    .btn-start {
+      display: block;
+      width: 100%;
+      border: 0;
+      background: var(--ink);
+      color: var(--bg);
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 16px;
+      padding: 18px 20px;
+      border-radius: 99px;
+      cursor: pointer;
+      transition: transform .15s ease, opacity .15s ease;
+    }
+
+    .btn-start:active {
+      transform: scale(.98);
+    }
+
+    /* ---- Question screen ---- */
+    .qtop {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .qprogress-track {
+      height: 6px;
+      background: var(--line);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-bottom: 26px;
+    }
+
+    .qprogress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--ink);
+      transition: width .3s ease;
+    }
+
+    .qtext {
+      font-size: clamp(1.15rem, 5vw, 1.5rem);
+      font-weight: 700;
+      line-height: 1.6;
+      margin: 12px 0 26px;
+      white-space: pre-wrap;
+    }
+
+    .qoptions {
+      display: grid;
+      gap: 10px;
+    }
+
+    .qoption {
+      width: 100%;
+      text-align: left;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px 18px;
+      font-family: inherit;
+      font-size: 14.5px;
+      font-weight: 500;
+      line-height: 1.55;
+      color: var(--ink);
+      cursor: pointer;
+      transition: border-color .15s ease, background .15s ease, transform .1s ease;
+    }
+
+    .qoption:hover {
+      border-color: var(--line-strong);
+      background: #FAFAF7;
+    }
+
+    .qoption:active {
+      transform: scale(.99);
+    }
+
+    .qback {
+      margin-top: 22px;
+      text-align: center;
+    }
+
+    .qback button {
+      background: none;
+      border: 0;
+      color: var(--muted);
+      font-size: 12.5px;
+      font-family: inherit;
+      cursor: pointer;
+      padding: 8px;
+    }
+
+    .qback button:hover {
+      color: var(--ink);
+    }
+
+    /* ---- Result screen ---- */
+    .res-eyebrow {
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      color: var(--muted);
+    }
+
+    .res-typecode {
+      display: block;
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 8px;
+      letter-spacing: .06em;
+    }
+
+    .res-name {
+      text-align: center;
+      font-size: clamp(1.8rem, 8vw, 2.6rem);
+      font-weight: 900;
+      line-height: 1.2;
+      margin: 12px 0 14px;
+      letter-spacing: -.02em;
+    }
+
+    .res-feature {
+      text-align: center;
+      color: var(--sub);
+      font-size: 14px;
+      line-height: 1.85;
+      max-width: 400px;
+      margin: 0 auto 28px;
+    }
+
+    .res-scores {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .res-score-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+      text-align: center;
+    }
+
+    .res-score-card .label {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: .04em;
+    }
+
+    .res-score-card .value {
+      font-size: 32px;
+      font-weight: 900;
+      margin-top: 6px;
+    }
+
+    .res-score-card .value small {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .val-fit {
+      color: var(--shinnen);
+    }
+
+    .val-und {
+      color: var(--shusei);
+    }
+
+    .res-axes {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 20px 20px 18px;
+      margin-bottom: 12px;
+    }
+
+    .res-axes-title {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: .04em;
+      margin-bottom: 16px;
+    }
+
+    .axis-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .axis-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .axis-row .axis-label {
+      width: 48px;
+      font-size: 12.5px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .axis-row .bar-track {
+      flex: 1;
+      height: 8px;
+      background: #F2F1EC;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .axis-row .bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width .5s ease;
+    }
+
+    .axis-row .axis-val {
+      width: 30px;
+      text-align: right;
+      font-size: 12px;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .res-detail {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .res-detail-item {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px 18px;
+    }
+
+    .res-detail-item .dt {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: .04em;
+      margin-bottom: 6px;
+    }
+
+    .res-detail-item .dd {
+      font-size: 13.5px;
+      line-height: 1.75;
+      color: var(--ink);
+    }
+
+    .res-actions {
+      display: grid;
+      gap: 10px;
+    }
+
+    .btn-share {
+      display: block;
+      width: 100%;
+      border: 0;
+      background: var(--ink);
+      color: var(--bg);
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 14.5px;
+      padding: 16px 20px;
+      border-radius: 99px;
+      cursor: pointer;
+      transition: transform .15s ease;
+    }
+
+    .btn-share:active {
+      transform: scale(.98);
+    }
+
+    .btn-retry {
+      display: block;
+      width: 100%;
+      border: 1px solid var(--line-strong);
+      background: transparent;
+      color: var(--ink);
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 14.5px;
+      padding: 16px 20px;
+      border-radius: 99px;
+      cursor: pointer;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 28px;
+      transform: translateX(-50%) translateY(12px);
+      background: var(--ink);
+      color: var(--bg);
+      padding: 12px 20px;
+      border-radius: 99px;
+      font-size: 13px;
+      font-weight: 700;
+      opacity: 0;
+      pointer-events: none;
+      transition: .22s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 36px;
+      letter-spacing: .04em;
+    }
+
+    /* ---- Debug ---- */
+    .debug-entry {
+      display: block;
+      text-align: center;
+      margin-top: 14px;
+      font-size: 11.5px;
+      color: var(--muted);
+      text-decoration: underline;
+      cursor: pointer;
+      background: none;
+      border: 0;
+      width: 100%;
+      font-family: inherit;
+    }
+
+    .debug-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: .06em;
+      margin-bottom: 16px;
+    }
+
+    .debug-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .debug-card {
+      text-align: left;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .debug-card:hover {
+      border-color: var(--line-strong);
+    }
+
+    .debug-card .code {
+      font-size: 10.5px;
+      color: var(--muted);
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
+
+    .debug-card .name {
+      font-size: 14px;
+      font-weight: 700;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    .debug-back {
+      display: block;
+      width: 100%;
+      border: 1px solid var(--line-strong);
+      background: transparent;
+      color: var(--ink);
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 13.5px;
+      padding: 14px 20px;
+      border-radius: 99px;
+      cursor: pointer;
+    }
+
+    @media (max-width:380px) {
+      .intro-axes {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
-<body>
-<div class="app">
 
-  <div class="brand">
-    <div class="brand-mark">SHIRAKI MATCH</div>
-    <div class="brand-sub">白木適合度診断</div>
+<body>
+  <div class="app">
+
+    <div class="brand">
+      <div class="brand-mark">SHIRAKI MATCH</div>
+      <div class="brand-sub">白木適合度診断</div>
+    </div>
+
+    <!-- ============ INTRO ============ -->
+    <section id="screen-intro">
+      <div class="intro-hero">
+        <div class="intro-eyebrow">FULL 32 QUESTIONS DIAGNOSIS</div>
+        <h1 class="intro-title">白木を、<span>どれだけ知ってる？</span></h1>
+        <p class="intro-desc">32の質問に答えて、白木颯人との「適合度」と「理解度」を診断。4つの軸から、あなたと白木の関係性が16タイプのどれに当てはまるか分かります。</p>
+      </div>
+
+      <div class="intro-axes">
+        <div class="intro-axis">
+          <div class="label"><span class="dot" style="background:var(--shinnen)"></span>信念</div>
+          <div class="desc">何を大切に生きているか</div>
+        </div>
+        <div class="intro-axis">
+          <div class="label"><span class="dot" style="background:var(--shusei)"></span>習性</div>
+          <div class="desc">日常の動き方・過ごし方</div>
+        </div>
+        <div class="intro-axis">
+          <div class="label"><span class="dot" style="background:var(--kyorikan)"></span>距離感</div>
+          <div class="desc">人との関わり方</div>
+        </div>
+        <div class="intro-axis">
+          <div class="label"><span class="dot" style="background:var(--kando)"></span>感度</div>
+          <div class="desc">何に心が動くか</div>
+        </div>
+      </div>
+
+      <div class="intro-meta">
+        <span>質問数 32問</span>
+        <span>所要時間 約4分</span>
+      </div>
+
+      <button class="btn-start" id="btn-start">診断をはじめる</button>
+      <button class="debug-entry hidden" id="debug-entry">デバッグ: 全タイプ一覧</button>
+    </section>
+
+    <!-- ============ DEBUG LIST ============ -->
+    <section id="screen-debug" class="hidden">
+      <div class="debug-title">全16タイプ プレビュー</div>
+      <div class="debug-grid" id="debug-grid"></div>
+      <button class="debug-back" id="debug-back-to-intro">診断トップに戻る</button>
+    </section>
+
+    <!-- ============ QUESTION ============ -->
+    <section id="screen-question" class="hidden">
+      <div class="qtop">
+        <span id="q-current">Q1</span>
+        <span id="q-total-label">/ 32</span>
+      </div>
+      <div class="qprogress-track">
+        <div class="qprogress-fill" id="q-progress-fill"></div>
+      </div>
+
+      <p class="qtext" id="q-text"></p>
+      <div class="qoptions" id="q-options"></div>
+
+      <div class="qback">
+        <button id="btn-back">← 前の質問に戻る</button>
+      </div>
+    </section>
+
+    <!-- ============ RESULT ============ -->
+    <section id="screen-result" class="hidden">
+      <div class="res-eyebrow">DIAGNOSIS RESULT</div>
+      <span class="res-typecode" id="res-typecode"></span>
+      <h2 class="res-name" id="res-name"></h2>
+      <p class="res-feature" id="res-feature"></p>
+
+      <div class="res-scores">
+        <div class="res-score-card">
+          <div class="label">白木適合度</div>
+          <div class="value val-fit"><span id="res-fit">0</span><small>%</small></div>
+        </div>
+        <div class="res-score-card">
+          <div class="label">白木理解度</div>
+          <div class="value val-und"><span id="res-und">0</span><small>%</small></div>
+        </div>
+      </div>
+
+      <div class="res-axes">
+        <div class="res-axes-title">4軸バランス</div>
+        <div class="axis-row">
+          <div class="axis-label">信念</div>
+          <div class="bar-track">
+            <div class="bar-fill" id="bar-shinnen" style="background:var(--shinnen)"></div>
+          </div>
+          <div class="axis-val" id="val-shinnen">0</div>
+        </div>
+        <div class="axis-row">
+          <div class="axis-label">習性</div>
+          <div class="bar-track">
+            <div class="bar-fill" id="bar-shusei" style="background:var(--shusei)"></div>
+          </div>
+          <div class="axis-val" id="val-shusei">0</div>
+        </div>
+        <div class="axis-row">
+          <div class="axis-label">距離感</div>
+          <div class="bar-track">
+            <div class="bar-fill" id="bar-kyorikan" style="background:var(--kyorikan)"></div>
+          </div>
+          <div class="axis-val" id="val-kyorikan">0</div>
+        </div>
+        <div class="axis-row">
+          <div class="axis-label">感度</div>
+          <div class="bar-track">
+            <div class="bar-fill" id="bar-kando" style="background:var(--kando)"></div>
+          </div>
+          <div class="axis-val" id="val-kando">0</div>
+        </div>
+      </div>
+
+      <div class="res-detail">
+        <div class="res-detail-item">
+          <div class="dt">関係性</div>
+          <div class="dd" id="res-relation"></div>
+        </div>
+        <div class="res-detail-item">
+          <div class="dt">強み</div>
+          <div class="dd" id="res-strength"></div>
+        </div>
+        <div class="res-detail-item">
+          <div class="dt">注意点</div>
+          <div class="dd" id="res-caution"></div>
+        </div>
+        <div class="res-detail-item">
+          <div class="dt">おすすめ</div>
+          <div class="dd" id="res-recommend"></div>
+        </div>
+      </div>
+
+      <div class="res-actions">
+        <button class="btn-share" id="btn-share">結果を共有する</button>
+        <button class="btn-retry" id="btn-retry">もう一度診断する</button>
+        <button class="debug-back hidden" id="btn-back-to-debug">デバッグ一覧に戻る</button>
+      </div>
+    </section>
+
+    <div class="footer">SHIRAKI MATCH — 白木適合度診断</div>
   </div>
 
-  <!-- ============ INTRO ============ -->
-  <section id="screen-intro">
-    <div class="intro-hero">
-      <div class="intro-eyebrow">FULL 32 QUESTIONS DIAGNOSIS</div>
-      <h1 class="intro-title">白木を、<span>どれだけ知ってる？</span></h1>
-      <p class="intro-desc">32の質問に答えて、白木颯人との「適合度」と「理解度」を診断。4つの軸から、あなたと白木の関係性が16タイプのどれに当てはまるか分かります。</p>
-    </div>
+  <div class="toast" id="toast">結果をコピーしました</div>
 
-    <div class="intro-axes">
-      <div class="intro-axis">
-        <div class="label"><span class="dot" style="background:var(--shinnen)"></span>信念</div>
-        <div class="desc">何を大切に生きているか</div>
-      </div>
-      <div class="intro-axis">
-        <div class="label"><span class="dot" style="background:var(--shusei)"></span>習性</div>
-        <div class="desc">日常の動き方・過ごし方</div>
-      </div>
-      <div class="intro-axis">
-        <div class="label"><span class="dot" style="background:var(--kyorikan)"></span>距離感</div>
-        <div class="desc">人との関わり方</div>
-      </div>
-      <div class="intro-axis">
-        <div class="label"><span class="dot" style="background:var(--kando)"></span>感度</div>
-        <div class="desc">何に心が動くか</div>
-      </div>
-    </div>
+  <script>
+    /* ====== DATA (auto-generated from scoring design) ====== */
+    const QUESTIONS = [
+      {
+        "no": 1,
+        "q": "朝、目が覚めた。どうする？（わりとフリーな日）",
+        "axis1": "shusei",
+        "axis2": null,
+        "choices": [
+          {
+            "text": "アラームを止めるついでにスマホいじる",
+            "fit": 10,
+            "understand": 8
+          },
+          {
+            "text": "カーテンを開ける",
+            "fit": 5,
+            "understand": 7
+          },
+          {
+            "text": "時間を見て、寝れるだけ寝る",
+            "fit": 4,
+            "understand": 6
+          }
+        ]
+      },
+      {
+        "no": 2,
+        "q": "歯磨きするとき、何を考える？",
+        "axis1": "shusei",
+        "axis2": null,
+        "choices": [
+          {
+            "text": "無心",
+            "fit": 5,
+            "understand": 7
+          },
+          {
+            "text": "スマホいじる、テレビ見る",
+            "fit": 7,
+            "understand": 6
+          },
+          {
+            "text": "奥歯磨けてるかなーとか考える（歯磨きに集中する）",
+            "fit": 9,
+            "understand": 7
+          },
+          {
+            "text": "今日何しようかなとか考える",
+            "fit": 4,
+            "understand": 6
+          }
+        ]
+      },
+      {
+        "no": 3,
+        "q": "ほんのちょっと外出する（買い出しやポスト投函など）。身だしなみはどうしようか。",
+        "axis1": "shusei",
+        "axis2": "shinnen",
+        "choices": [
+          {
+            "text": "しっかり整える",
+            "fit": 4,
+            "understand": 5
+          },
+          {
+            "text": "パジャマのまま。寝ぐせもそのまま",
+            "fit": 6,
+            "understand": 9
+          },
+          {
+            "text": "ある程度の身だしなみはしておく",
+            "fit": 10,
+            "understand": 8
+          },
+          {
+            "text": "気分による",
+            "fit": 0,
+            "understand": 0
+          }
+        ]
+      },
+      {
+        "no": 4,
+        "q": "ふと小さな疑問がでてきた（「例：ブルーハワイ味」ってどういう意味だろう？）。どうする？",
+        "axis1": "kando",
+        "axis2": null,
+        "choices": [
+          {
+            "text": "気にしない",
+            "fit": 0,
+            "understand": 0
+          },
+          {
+            "text": "すぐ調べる",
+            "fit": 3,
+            "understand": 4
+          },
+          {
+            "text": "いったん考えてみる",
+            "fit": 10,
+            "understand": 8
+          },
+          {
+            "text": "調べずに会話のネタとしてとっておく",
+            "fit": 5,
+            "understand": 7
+          }
+        ]
+      },
+      {
+        "no": 5,
+        "q": "1人で受ける大講義。どこに座ろう？",
+        "axis1": "shusei",
+        "axis2": null,
+        "choices": [
+          {
+            "text": "前",
+            "fit": 4,
+            "understand": 6
+          },
+          {
+            "text": "後ろ",
+            "fit": 2,
+            "understand": 2
+          },
+          {
+            "text": "横のほう",
+            "fit": 10,
+            "understand": 8
+          },
+          {
+            "text": "中心らへん",
+            "fit": 3,
+            "understand": 4
+          }
+        ]
+      },
+      {
+        "no": 6,
+        "q": "重めの課題が出た！どうする？",
+        "axis1": "shusei",
+        "axis2": "shinnen",
+        "choices": [
+          {
+            "text": "なるべく早く取り掛かる、少しずつやっておく",
+            "fit": 10,
+            "understand": 8
+          },
+          {
+            "text": "ある日にまとめてやる",
+            "fit": 7,
+            "understand": 7
+          },
+          {
+            "text": "期限ギリギリになって取り組む",
+            "fit": 2,
+            "understand": 2
+          }
+        ]
+      },
+      {
+        "no": 7,
+        "q": "提出した課題に少しミスが見つかった（誤字とか改行ミスとか）。どうする？（点数は講義全体の20%くらい）",
+        "axis1": "shinnen",
+        "axis2": null,
+        "choices": [
+          {
+            "text": "修正して再提出する",
+            "fit": 10,
+            "understand": 8
+          },
+          {
+            "text": "気にしない",
+            "fit": 3,
+            "understand": 4
+          },
+          {
+            "text": "余裕があれば修正する。基本はそのまま。",
+            "fit": 5,
+            "understand": 7
+          }
+        ]
+      },
+      {
+        "no": 8,
+        "q": "夜、バイトやサークルから帰宅した（23時くらい）。おなかは空いてない。どうする？",
+        "axis1": "shusei",
+        "axis2": null,
+        "choices": [
+          {
+            "text": "すぐ風呂に入る",
+            "fit": 10,
+            "understand": 8
+          },
+          {
+            "text": "いったんくつろぐ",
+            "fit": 7,
+            "understand": 6
+          },
+          {
+            "text": "寝落ちしてまう時もある",
+            "fit": 0,
+            "understand": 0
+          }
+        ]
+      },
+      {
+        "no": 9,
+        "q": "入浴中、「シャンプーしたっけ？」ってなる時がある？",
+        "axis1": "shusei",
+        "axis2": null,
+        "choices": [
+          {
+            "text": "あるある",
+            "fit": 5,
+            "understand": 7
+          },
+          {
+            "text": "ときどきある（週1とか）",
+            "fit": 10,
+            "understand": 8
+          },
+          {
+            "text": "あまりない（月1回とか）",
+            "fit": 5,
+            "understand": 7
+          },
+          {
+            "text": "絶対にない",
+            "fit": 2,
+            "understand": 3
+          }
+        ]
+      },
+      {
+        "no": 10,
+        "q": "そろそろ寝ようかな、、、",
+        "axis1": "shusei",
+        "axis2": null,
+        "choices": [
+          {
+            "text": "明日の予定を確認する",
+            "fit": 3,
+            "understand": 8
+          },
+          {
+            "text": "いつも通りの時間にアラームをセットする",
+            "fit": 10,
+            "understand": 8
+          },
+          {
+            "text": "気付いたら寝ている",
+            "fit": 4,
+            "understand": 6
+          }
+        ]
+      },
+      {
+        "no": 11,
+        "q": "寝たいのに寝れない。どうしよう。",
+        "axis1": "shusei",
+        "axis2": null,
+        "choices": [
+          {
+            "text": "目を閉じてがんばる",
+            "fit": 10,
+            "understand": 8
+          },
+          {
+            "text": "ボーっとして眠くなるのを待つ",
+            "fit": 5,
+            "understand": 7
+          },
+          {
+            "text": "スマホを見る",
+            "fit": 4,
+            "understand": 6
+          },
+          {
+            "text": "もぞもぞする",
+            "fit": 4,
+            "understand": 6
+          }
+        ]
+      },
+      {
+        "no": 12,
+        "q": "友人と旅行に行く。どこに行こう？（心地のいい気候）",
+        "axis1": "kando",
+        "axis2": null,
+        "choices": [
+          {
+            "text": "山や森など",
+            "fit": 5,
+            "understand": 7
+          },
+          {
+            "text": "海や海岸",
+            "fit": 10,
+            "understand": 8
+          },
+          {
+            "text": "街中、都会",
+            "fit": 2,
+            "understand": 3
+          },
+          {
+            "text": "癖が強めなところ（神社とか？）",
+            "fit": 6,
+            "understand": 8
+          }
+        ]
+      },
+      {
+        "no": 13,
+        "q": "旅行先でおいしそうな飲食店に入った。思ったより値段が高い、、、",
+        "axis1": "shinnen",
+        "axis2": null,
+        "choices": [
+          {
+            "text": "気にせず払って、その土地ならではの（質の高い）ものを食べる",
+            "fit": 10,
+            "understand": 8
+          },
+          {
+            "text": "極力安いものを見つける（どこでも食べられるもの）",
+            "fit": 2,
+            "understand": 2
+          },
+          {
+            "text": "コスパを重視する。あくまで「その土地ならでは」を考える。",
+            "fit": 5,
+            "understand": 7
+          }
+        ]
+      },
+      {
+        "no": 14,
+        "q": "ホテルに到着。部屋のお風呂に入る。何番目がいい？",
+        "axis1": "kyorikan",
+        "axis2": "shinnen",
+        "choices": [
+          {
+            "text": "1番目",
+            "fit": 5,
+            "understand": 7
+          },
+          {
+            "text": "2番目",
+            "fit": 2,
+            "understand": 2
+          },
+          {
+            "text": "3番目",
+            "fit": 6,
+            "understand": 9
+          },
+          {
+            "text": "こだわりはない",
+            "fit": 10,
+            "understand": 9
+          }
+        ]
+      },
+      {
+        "no": 15,
+        "q": "旅行先で寝る前までの時間、どうしたい？",
+        "axis1": "kyorikan",
+        "axis2": null,
+        "choices": [
+          {
+            "text": "語り合ってみる",
+            "fit": 10,
+            "understand": 8
+          },
+          {
+            "text": "すぐ寝る",
+            "fit": 0,
+            "understand": 0
+          },
+          {
+            "text": "ゲームとかする",
+            "fit": 5,
+            "understand": 7
+          },
+          {
+            "text": "外出してみる",
+            "fit": 4,
+            "understand": 6
+          }
+        ]
+      },
+      {
+        "no": 16,
+        "q": "温泉宿での朝。どうしたい？",
+        "axis1": "shusei",
+        "axis2": null,
+        "choices": [
+          {
+            "text": "朝風呂は絶対に入る",
+            "fit": 10,
+            "understand": 8
+          },
+          {
+            "text": "朝風呂に入りたいと思うけど寝てしまう",
+            "fit": 4,
+            "understand": 5
+          },
+          {
+            "text": "寝ていたい",
+            "fit": 2,
+            "understand": 2
+          },
+          {
+            "text": "目覚めの気分による",
+            "fit": 2,
+            "understand": 2
+          }
+        ]
+      },
+      {
+        "no": 17,
+        "q": "バドミントンでダブルスのペアを組む。",
+        "axis1": "kyorikan",
+        "axis2": null,
+        "choices": [
+          {
+            "text": "自分が引っ張りたい",
+            "fit": 10,
+            "understand": 8
+          },
+          {
+            "text": "キャリーしてほしい",
+            "fit": 5,
+            "understand": 7
+          },
+          {
+            "text": "同じくらいの実力がいい",
+            "fit": 5,
+            "understand": 7
+          },
+          {
+            "text": "こだわりはない",
+            "fit": 2,
+            "understand": 3
+          }
+        ]
+      },
+      {
+        "no": 18,
+        "q": "こっち側のコート見にくいなあ。トスで勝ったらどうする？（ダブルス、3ゲーム）",
+        "axis1": "kyorikan",
+        "axis2": null,
+        "choices": [
+          {
+            "text": "見やすい方を選ぶ",
+            "fit": 5,
+            "understand": 7
+          },
+          {
+            "text": "いつも通り",
+            "fit": 10,
+            "understand": 8
+          },
+          {
+            "text": "ペアに判断を任せる",
+            "fit": 3,
+            "understand": 6
+          }
+        ]
+      },
+      {
+        "no": 19,
+        "q": "けっこう大事な試合のインターバル。ペアとどうしたい？",
+        "axis1": "kyorikan",
+        "axis2": "kando",
+        "choices": [
+          {
+            "text": "戦略的なことを語り合いたい",
+            "fit": 5,
+            "understand": 7
+          },
+          {
+            "text": "マインド面で語り合いたい",
+            "fit": 3,
+            "understand": 4
+          },
+          {
+            "text": "どっちも語り合いたい",
+            "fit": 10,
+            "understand": 9
+          },
+          {
+            "text": "ペアに任せる",
+            "fit": 0,
+            "understand": 0
+          }
+        ]
+      },
+      {
+        "no": 20,
+        "q": "あまり話したことがない人とペアになった。どうする？",
+        "axis1": "kyorikan",
+        "axis2": null,
+        "choices": [
+          {
+            "text": "いつも通り",
+            "fit": 10,
+            "understand": 8
+          },
+          {
+            "text": "いつもより話すようにする",
+            "fit": 6,
+            "understand": 9
+          },
+          {
+            "text": "いつもより口数は減る",
+            "fit": 2,
+            "understand": 2
+          },
+          {
+            "text": "相手の顔色をうかがう",
+            "fit": 2,
+            "understand": 2
+          }
+        ]
+      },
+      {
+        "no": 21,
+        "q": "白熱した試合。ペア（白木）のミスが続いている。",
+        "axis1": "kyorikan",
+        "axis2": "kando",
+        "choices": [
+          {
+            "text": "気にしない",
+            "fit": 3,
+            "understand": 4
+          },
+          {
+            "text": "とにかく励ます",
+            "fit": 10,
+            "understand": 9
+          },
+          {
+            "text": "「自分が頑張らないと」と思う",
+            "fit": 5,
+            "understand": 8
+          },
+          {
+            "text": "イライラするが隠す。口数は減る。",
+            "fit": 0,
+            "understand": 0
+          }
+        ]
+      },
+      {
+        "no": 22,
+        "q": "良い試合ではあったが負けてまった、、、",
+        "axis1": "kyorikan",
+        "axis2": "kando",
+        "choices": [
+          {
+            "text": "反省会する",
+            "fit": 6,
+            "understand": 8
+          },
+          {
+            "text": "励まし合う",
+            "fit": 10,
+            "understand": 8
+          },
+          {
+            "text": "切り替える、引きずらない",
+            "fit": 3,
+            "understand": 5
+          },
+          {
+            "text": "相手を褒める",
+            "fit": 5,
+            "understand": 7
+          }
+        ]
+      },
+      {
+        "no": 23,
+        "q": "団体戦。他のメンバーが試合をしている（次は自分たちが試合）。一番何にフォーカスする？",
+        "axis1": "shinnen",
+        "axis2": "kyorikan",
+        "choices": [
+          {
+            "text": "応援に徹する",
+            "fit": 10,
+            "understand": 8
+          },
+          {
+            "text": "相手の弱点を探す",
+            "fit": 6,
+            "understand": 6
+          },
+          {
+            "text": "味方の弱点を探す",
+            "fit": 5,
+            "understand": 7
+          },
+          {
+            "text": "自分の試合の準備に集中する",
+            "fit": 0,
+            "understand": 0
+          }
+        ]
+      },
+      {
+        "no": 24,
+        "q": "白木と同じ授業を取っていることに気づいた（講義室で発見した）。白木は３人席の端に1人でいる。どこに座ろう？",
+        "axis1": "kyorikan",
+        "axis2": null,
+        "choices": [
+          {
+            "text": "隣",
+            "fit": 6,
+            "understand": 9
+          },
+          {
+            "text": "白木の後ろ",
+            "fit": 10,
+            "understand": 8
+          },
+          {
+            "text": "離れたところ",
+            "fit": 2,
+            "understand": 2
+          },
+          {
+            "text": "白木の前",
+            "fit": 4,
+            "understand": 6
+          }
+        ]
+      },
+      {
+        "no": 25,
+        "q": "バイト終わりの友人（同じ講義を取っていたら話すくらいの関係）を見つけた。",
+        "axis1": "kyorikan",
+        "axis2": null,
+        "choices": [
+          {
+            "text": "話しかける",
+            "fit": 2,
+            "understand": 9
+          },
+          {
+            "text": "そっとしておく",
+            "fit": 3,
+            "understand": 4
+          },
+          {
+            "text": "気付いていないふりをする",
+            "fit": 10,
+            "understand": 0
+          },
+          {
+            "text": "離れる",
+            "fit": 4,
+            "understand": 3
+          }
+        ]
+      },
+      {
+        "no": 26,
+        "q": "講義のグループワーク。全員初対面。どうしよう。",
+        "axis1": "kyorikan",
+        "axis2": null,
+        "choices": [
+          {
+            "text": "自分から話す",
+            "fit": 10,
+            "understand": 9
+          },
+          {
+            "text": "誰かが話すのを待つ",
+            "fit": 2,
+            "understand": 2
+          },
+          {
+            "text": "人による（第一印象とかで判断）。",
+            "fit": 3,
+            "understand": 4
+          }
+        ]
+      },
+      {
+        "no": 27,
+        "q": "どんな作品（映画やドラマ、アニメ）で泣きやすい？",
+        "axis1": "kando",
+        "axis2": null,
+        "choices": [
+          {
+            "text": "家族愛",
+            "fit": 10,
+            "understand": 8
+          },
+          {
+            "text": "恋",
+            "fit": 4,
+            "understand": 5
+          },
+          {
+            "text": "努力",
+            "fit": 7,
+            "understand": 7
+          },
+          {
+            "text": "友情",
+            "fit": 2,
+            "understand": 3
+          }
+        ]
+      },
+      {
+        "no": 28,
+        "q": "突然予定（3時間ほど）がなくなった。どうする？",
+        "axis1": "shusei",
+        "axis2": null,
+        "choices": [
+          {
+            "text": "外出する",
+            "fit": 10,
+            "understand": 8
+          },
+          {
+            "text": "寝る",
+            "fit": 2,
+            "understand": 2
+          },
+          {
+            "text": "家でテレビ見るなどしてくつろぐ",
+            "fit": 4,
+            "understand": 5
+          },
+          {
+            "text": "誰かに連絡する",
+            "fit": 2,
+            "understand": 8
+          }
+        ]
+      },
+      {
+        "no": 29,
+        "q": "1日フリー。やらなければならない課題がある。2~3時間くらいはかかりそう。",
+        "axis1": "shusei",
+        "axis2": "shinnen",
+        "choices": [
+          {
+            "text": "朝からやる",
+            "fit": 10,
+            "understand": 8
+          },
+          {
+            "text": "少しくつろいで昼からやる",
+            "fit": 5,
+            "understand": 6
+          },
+          {
+            "text": "夕方や夜からやる",
+            "fit": 1,
+            "understand": 1
+          },
+          {
+            "text": "今日はくつろぎに徹する",
+            "fit": 0,
+            "understand": 0
+          }
+        ]
+      },
+      {
+        "no": 30,
+        "q": "友人と2人でご飯を食べる。自分は麺類の気分、友人はご飯の気分らしい。",
+        "axis1": "kyorikan",
+        "axis2": "shinnen",
+        "choices": [
+          {
+            "text": "自分の意見を通す",
+            "fit": 3,
+            "understand": 9
+          },
+          {
+            "text": "相手に合わせる",
+            "fit": 10,
+            "understand": 8
+          },
+          {
+            "text": "うまいこと折衷案を見つける",
+            "fit": 5,
+            "understand": 9
+          }
+        ]
+      },
+      {
+        "no": 31,
+        "q": "旅行で沖縄に行くことになった。あとはどうしよう。",
+        "axis1": "shusei",
+        "axis2": null,
+        "choices": [
+          {
+            "text": "計画を綿密に立てる（観光地やご飯の場所なども）",
+            "fit": 10,
+            "understand": 8
+          },
+          {
+            "text": "旅行当日のノリに任せる",
+            "fit": 0,
+            "understand": 1
+          },
+          {
+            "text": "行きたい観光地やランドマークのみ考える",
+            "fit": 4,
+            "understand": 5
+          }
+        ]
+      },
+      {
+        "no": 32,
+        "q": "大事なのは？",
+        "axis1": "shinnen",
+        "axis2": "kando",
+        "choices": [
+          {
+            "text": "愛、友情",
+            "fit": 10,
+            "understand": 8
+          },
+          {
+            "text": "努力、継続",
+            "fit": 3,
+            "understand": 5
+          },
+          {
+            "text": "効率",
+            "fit": 2,
+            "understand": 4
+          },
+          {
+            "text": "「今」の楽しさ",
+            "fit": 5,
+            "understand": 7
+          }
+        ]
+      }
+    ];
 
-    <div class="intro-meta">
-      <span>質問数 32問</span>
-      <span>所要時間 約4分</span>
-    </div>
+    const TYPES = [
+      {
+        "code": "HHHH",
+        "name": "白木颯人",
+        "feature": "価値観も生活リズムも距離感も感性も、白木本人とほぼ重なっている。あなたは白木颯人です。",
+        "relation": "説明不要。お互いに「わかりすぎて逆に新鮮味がない」と感じる瞬間があるかもしれない。僕は嬉しいけどね。",
+        "strength": "白木の考えを先読みできるので、頼れる存在として重宝される。これからもよろしくお願いします。",
+        "caution": "似すぎているとぶつかる時は本気で衝突する。逃げ場がない。ただ、関係は衝突を繰り返して成長する。",
+        "recommend": "たまにはあえて違う意見をぶつけてみよう。新しい一面が見えるかも。"
+      },
+      {
+        "code": "HHHL",
+        "name": "兄　白木翔大",
+        "feature": "価値観・生活リズム・距離感はしっくりくるが、心が動くポイントだけ少しズレている。実際、私とうちの兄はかなり趣味が違います。",
+        "relation": "兄弟のような自然な近さ。一緒にいて疲れないタイプ。もしかしたら親戚かもしれない。",
+        "strength": "普段のやり取りはほぼノーストレス。安定した関係を築ける。一緒にいると白木は兄の姿を思い出すかも。",
+        "caution": "感動ポイントが違うので、盛り上がる映画や話題で温度差が出ることも。",
+        "recommend": "白木が泣いたポイントを聞いてみると、意外な発見があるはず。お互いの趣味を尊重していこう。"
+      },
+      {
+        "code": "HHLH",
+        "name": "母　白木貴子",
+        "feature": "価値観・生活リズム・感性は近いが、距離の詰め方だけ独特。見守るような関わり方になりやすい。まさに私の母。",
+        "relation": "安心感はあるが、踏み込みどころが少しズレる。1970年生まれだから仕方がない。ジェネレーションギャップ。",
+        "strength": "白木を急かさず自然体で受け止められる。一緒にいると僕は居心地の良さを感じるかもしれません。",
+        "caution": "距離を詰めきれず、関係が停滞する可能性も。反抗期かもしれません。長い目で見守りましょう。",
+        "recommend": "思い切って一歩踏み込んでみると、一気に距離が縮まるタイプ。何事も思い切ることが大切。思いきることで道は開ける。"
+      },
+      {
+        "code": "HHLL",
+        "name": "表白木",
+        "feature": "価値観と生活リズムは重なるが、対人スタイルと感性は完全に独立している。まさに表面は白木といえる？",
+        "relation": "理屈でつながる相棒。ノリより中身で分かり合える。語り合いを通すことでさらなる関係の向上につながりそう。",
+        "strength": "話が早い。効率重視な会話ができる。よきパートナーだともいえる。これからもよろしくお願いします。",
+        "caution": "感情面のすれ違いに気づきにくい。理屈で分かち合うからこそかもしれない。",
+        "recommend": "たまには非効率でも、感情の共有を大事にしてみて。語り合う機会を設けましょう。ご飯とか行きますか？"
+      },
+      {
+        "code": "HLHH",
+        "name": "メタ白木モン",
+        "feature": "価値観・距離感・感性は近いが、生活の型（習慣）だけ全然違う。中身は似ているのに動き方がバラバラ。まるで白木に擬態したメタモン。つまりメタ白木モン。",
+        "relation": "話は合うのに生活リズムが噛み合わず、すれ違いがち。僕と同棲するのには向いていないかも。",
+        "strength": "本質的な部分での相互理解は深い。つまり、深い語り合いができる可能性大。いつか話し合いましょう。",
+        "caution": "予定調整で苦労することが多そう。僕は計画とかを立てるのを好みます。",
+        "recommend": "スケジュールをこまめに共有すると関係がスムーズになる。逆に計画を立てるのなら任せてください。そこがかみ合えば完璧かも。"
+      },
+      {
+        "code": "HLHL",
+        "name": "コミュ白木",
+        "feature": "価値観と距離感の取り方だけが白木と一致。生活と感性は違う。人との関わり方が白木、つまりコミュ白木。",
+        "relation": "関わり方の相性だけで持っている関係。一緒にいて話がかみ合ったり、ノリが合ったりすることが多そう。",
+        "strength": "どんな空気でも自然に会話を回せる。困難に直面したときも話合うことができそう。",
+        "caution": "話題が合わず、沈黙が気まずくなる場面もあるかも。ただ、その分合うネタが見つかると非常に強い。",
+        "recommend": "共通の趣味を1つ見つけると関係が安定する。同じネタならいくらでもこすっても大丈夫！"
+      },
+      {
+        "code": "HLLH",
+        "name": "エクスタシーらき",
+        "feature": "価値観と感性だけが白木と重なる。生活リズムと距離感は独立している。エクスタシー（快感が最高潮に達してうっとりする状態）に遭遇する場面は同じかも。",
+        "relation": "感じ方だけで妙に通じ合う、不思議な関係性。心と心の関係といえる。",
+        "strength": "感動を分かち合える瞬間の共鳴度が高い。瞬間火力は異常なほど。そういう状況に直面すると関係がグッと縮まるかも。",
+        "caution": "日常の関わり方はズレがち。会う頻度や距離感で衝突しやすい。",
+        "recommend": "感性で繋がれる話題（映画や音楽）を軸に関係を育てよう。あまり僕は音楽とかは聞かないですが、おすすめがあれば教えてください。"
+      },
+      {
+        "code": "HLLL",
+        "name": "白木マインド",
+        "feature": "価値観だけが一致。生活・距離感・感性はすべて違う。信念だけで繋がる硬派なタイプ。白木とは心と心でつながっているかも。",
+        "relation": "表面的な相性は良くないかもしれないが、根っこの部分では信頼できる。人生観などは僕と共通している部分が多そう。",
+        "strength": "ここぞという時の判断基準が一致する。いざという時に頼れる。頼りにしています。",
+        "caution": "日常のノリや会話は噛み合いにくいかも？",
+        "recommend": "大事な場面で手を組んでこそ2人の強みが発揮される。かみ合った時の爆発力が魅力的。"
+      },
+      {
+        "code": "LHHH",
+        "name": "しらこはやと",
+        "feature": "生活・距離感・感性は近いのに、根本の価値観だけ違う。ノリは合うのに、たまに根っこでぶつかる。根元の部分ですれ違うとどちらかがしらこい反応をするかも。",
+        "relation": "普段は仲良しだが、大事な話になると意見が割れる。日常で一緒にいるときはすごく相性がいい。",
+        "strength": "一緒にいて楽しい、テンポの良い関係。少なくとも白木はあなたと一緒にいれて楽しいはず。",
+        "caution": "価値観がぶつかった時は、ちゃんと話し合うことが大事。",
+        "recommend": "意見が割れた時こそ、腰を据えて話し合ってみて。日常での関係に満足せずに深い話をすることが大切。お互いに1歩踏み出す勇気。"
+      },
+      {
+        "code": "LHHL",
+        "name": "はやぴー",
+        "feature": "生活リズムと距離感は合うが、価値観と感性はズレている。表面的にはすごく仲良く見えるタイプ。白木の小2~中3までのあだ名。担任の先生が命名。",
+        "relation": "周りから見ると仲良しコンビ、でも深い部分はあまり共有していない。「しらこはやと」とかなり似ている部分があるかも。",
+        "strength": "一緒にいて気楽。負担の少ない関係。白木にとって居心地の良さはピカイチ。",
+        "caution": "本音を話す機会が少なく、関係が浅いまま固定されているかも？。",
+        "recommend": "たまには本音や将来の話をしてみると、意外な発見があるかも。深い話し合いをいつかしましょう。"
+      },
+      {
+        "code": "LHLH",
+        "name": "エア白木",
+        "feature": "生活リズムと感性は近いが、価値観と距離感は独立。同じ空気を吸っているのに近づき方が違う。",
+        "relation": "無理に距離を詰めなくても、自然体でいられる関係。まさに空気のように気づけば近くにいる関係。",
+        "strength": "無理に合わせなくても心地よい距離感を保てる。お互い自然体でストレスなく過ごすことができそう。",
+        "caution": "関係を深めるきっかけは、自分から作る必要があるかも。お互い深め合いましょう。",
+        "recommend": "共通の生活リズムを活かして、一緒に何かする時間を増やしてみよう。感動する場面も2人で共通していそう。"
+      },
+      {
+        "code": "LHLL",
+        "name": "しライフき颯人",
+        "feature": "生活リズムだけが一致。価値観・距離感・感性はすべて違う。習慣だけで成立するタイプ。おそらく僕と同じようなルーティンがあるはず。",
+        "relation": "気づけば同じタイミングで動いている、不思議な縁。どちらかのリズムに合わせる必要はなく、ストレスなく関われそう。",
+        "strength": "生活面での連携は取りやすい。同棲に向いているかも？白木家空いてます。",
+        "caution": "深い話や感情面での共有は少なめかも。",
+        "recommend": "生活リズムが合う強みを活かして、まずは気軽に誘ってみよう。長い時間をかけることで強固な関係ができるかも。"
+      },
+      {
+        "code": "LLHH",
+        "name": "裏白木",
+        "feature": "距離感と感性は近いが、価値観も生活リズムも真逆。感覚だけで分かり合える系。表面ではなく根っこの部分でつながる関係。",
+        "relation": "理屈は合わないのに、なぜか居心地がいい。お互いの価値観を尊重し合える気がする。",
+        "strength": "人間の根本的な部分は共通しているため言葉にしなくても伝わる空気感がある。",
+        "caution": "肝心なところで価値観がぶつかりやすい。",
+        "recommend": "感覚的な繋がりを大事にしつつ、逆に価値観の違いは無理に埋めなくてもいいかも？お互いを思いやることでさらなる関係の発展につながりそう。"
+      },
+      {
+        "code": "LLHL",
+        "name": "SHIRAKIN",
+        "feature": "距離感だけが白木と一致。他はすべて違う。なぜか居心地はいいタイプ。タイプ名の理由は特にない。",
+        "relation": "理由はわからないけど一緒にいて楽。お互いの交友関係でも共通しているところがあるかも。",
+        "strength": "程よい距離感を自然に保てる。気まずさを感じることはあまりなさそう。",
+        "caution": "共通点が少ないので、関係が深まりにくいかも？",
+        "recommend": "居心地の良さを武器に、少しずつ共通の話題を増やしてみて。時間を忘れて語り合うこともあるかも？"
+      },
+      {
+        "code": "LLLH",
+        "name": "ほろり白木",
+        "feature": "感性だけが一致。他はすべて違う。同じ場面で泣ける、それだけで繋がっている。ほろりと涙する瞬間は同じ。",
+        "relation": "生活リズムや価値観に違いはあるが、感動する瞬間はシンクロする。そのときの爆発力は異常なはず。",
+        "strength": "ここぞという場面での共感力は誰よりも高い。感情の高まりを共有することができるのは素晴らしい。",
+        "caution": "日常のライフスタイルではすれ違いやすいかも？",
+        "recommend": "感動を共有できる映画や物語を一緒に楽しんでみよう。お互いに「ほろり」と涙することでさらに関係が発展する。"
+      },
+      {
+        "code": "LLLL",
+        "name": "黒石遅斗（くろいし おそと）",
+        "feature": "全軸で白木と真逆。価値観も生活も距離感も感性も、何もかもが対極に位置する。白⇔黒、木⇔石、颯人⇔遅斗。",
+        "relation": "噛み合う要素は少なめだけど、それはそれで新しい発見に繋がるはず。パズルのピースのようにかみ合うこともありそう。",
+        "strength": "白木にない発想や視点を持っている。新鮮な存在。白木はあなたといるとワクワクするかも。",
+        "caution": "無理に合わせようとするとどちらかが疲れてしまうかも。",
+        "recommend": "違いを面白がれる関係を目指そう。真逆だからこそ見える世界がある。それぞれの短所を補い合うことである意味どのタイプよりもかみ合っているともいえる。"
+      }
+    ];
 
-    <button class="btn-start" id="btn-start">診断をはじめる</button>
-    <button class="debug-entry hidden" id="debug-entry">デバッグ: 全タイプ一覧</button>
-  </section>
+    /* ====== STATE ====== */
+    let current = 0;
+    const answers = new Array(QUESTIONS.length).fill(null); // {fit, understand, axis1, axis2}
 
-  <!-- ============ DEBUG LIST ============ -->
-  <section id="screen-debug" class="hidden">
-    <div class="debug-title">全16タイプ プレビュー</div>
-    <div class="debug-grid" id="debug-grid"></div>
-    <button class="debug-back" id="debug-back-to-intro">診断トップに戻る</button>
-  </section>
+    /* ====== ELEMENTS ====== */
+    const screenIntro = document.getElementById("screen-intro");
+    const screenQuestion = document.getElementById("screen-question");
+    const screenResult = document.getElementById("screen-result");
 
-  <!-- ============ QUESTION ============ -->
-  <section id="screen-question" class="hidden">
-    <div class="qtop">
-      <span id="q-current">Q1</span>
-      <span id="q-total-label">/ 32</span>
-    </div>
-    <div class="qprogress-track">
-      <div class="qprogress-fill" id="q-progress-fill"></div>
-    </div>
+    const qCurrentEl = document.getElementById("q-current");
+    const qProgressFill = document.getElementById("q-progress-fill");
+    const qTextEl = document.getElementById("q-text");
+    const qOptionsEl = document.getElementById("q-options");
+    const btnBack = document.getElementById("btn-back");
 
-    <p class="qtext" id="q-text"></p>
-    <div class="qoptions" id="q-options"></div>
+    document.getElementById("q-total-label").textContent = "/ " + QUESTIONS.length;
 
-    <div class="qback">
-      <button id="btn-back">← 前の質問に戻る</button>
-    </div>
-  </section>
+    /* ====== NAV ====== */
+    document.getElementById("btn-start").addEventListener("click", () => {
+      screenIntro.classList.add("hidden");
+      screenQuestion.classList.remove("hidden");
+      current = 0;
+      renderQuestion();
+    });
 
-  <!-- ============ RESULT ============ -->
-  <section id="screen-result" class="hidden">
-    <div class="res-eyebrow">DIAGNOSIS RESULT</div>
-    <span class="res-typecode" id="res-typecode"></span>
-    <h2 class="res-name" id="res-name"></h2>
-    <p class="res-feature" id="res-feature"></p>
+    btnBack.addEventListener("click", () => {
+      if (current > 0) {
+        current -= 1;
+        renderQuestion();
+      }
+    });
 
-    <div class="res-scores">
-      <div class="res-score-card">
-        <div class="label">白木適合度</div>
-        <div class="value val-fit"><span id="res-fit">0</span><small>%</small></div>
-      </div>
-      <div class="res-score-card">
-        <div class="label">白木理解度</div>
-        <div class="value val-und"><span id="res-und">0</span><small>%</small></div>
-      </div>
-    </div>
+    function renderQuestion() {
+      const q = QUESTIONS[current];
+      qCurrentEl.textContent = "Q" + (current + 1);
+      qProgressFill.style.width = Math.round((current / QUESTIONS.length) * 100) + "%";
 
-    <div class="res-axes">
-      <div class="res-axes-title">4軸バランス</div>
-      <div class="axis-row">
-        <div class="axis-label">信念</div>
-        <div class="bar-track"><div class="bar-fill" id="bar-shinnen" style="background:var(--shinnen)"></div></div>
-        <div class="axis-val" id="val-shinnen">0</div>
-      </div>
-      <div class="axis-row">
-        <div class="axis-label">習性</div>
-        <div class="bar-track"><div class="bar-fill" id="bar-shusei" style="background:var(--shusei)"></div></div>
-        <div class="axis-val" id="val-shusei">0</div>
-      </div>
-      <div class="axis-row">
-        <div class="axis-label">距離感</div>
-        <div class="bar-track"><div class="bar-fill" id="bar-kyorikan" style="background:var(--kyorikan)"></div></div>
-        <div class="axis-val" id="val-kyorikan">0</div>
-      </div>
-      <div class="axis-row">
-        <div class="axis-label">感度</div>
-        <div class="bar-track"><div class="bar-fill" id="bar-kando" style="background:var(--kando)"></div></div>
-        <div class="axis-val" id="val-kando">0</div>
-      </div>
-    </div>
+      qTextEl.textContent = q.q;
 
-    <div class="res-detail">
-      <div class="res-detail-item">
-        <div class="dt">関係性</div>
-        <div class="dd" id="res-relation"></div>
-      </div>
-      <div class="res-detail-item">
-        <div class="dt">強み</div>
-        <div class="dd" id="res-strength"></div>
-      </div>
-      <div class="res-detail-item">
-        <div class="dt">注意点</div>
-        <div class="dd" id="res-caution"></div>
-      </div>
-      <div class="res-detail-item">
-        <div class="dt">おすすめ</div>
-        <div class="dd" id="res-recommend"></div>
-      </div>
-    </div>
+      qOptionsEl.innerHTML = "";
+      q.choices.forEach((choice) => {
+        const btn = document.createElement("button");
+        btn.className = "qoption";
+        btn.textContent = choice.text;
+        btn.addEventListener("click", () => selectChoice(choice));
+        qOptionsEl.appendChild(btn);
+      });
 
-    <div class="res-actions">
-      <button class="btn-share" id="btn-share">結果を共有する</button>
-      <button class="btn-retry" id="btn-retry">もう一度診断する</button>
-      <button class="debug-back hidden" id="btn-back-to-debug">デバッグ一覧に戻る</button>
-    </div>
-  </section>
-
-  <div class="footer">SHIRAKI MATCH — 白木適合度診断</div>
-</div>
-
-<div class="toast" id="toast">結果をコピーしました</div>
-
-<script>
-/* ====== DATA (auto-generated from scoring design) ====== */
-const QUESTIONS = [
-  {
-    "no": 1,
-    "q": "朝、目が覚めた。どうする？（わりとフリーな日）",
-    "axis1": "shusei",
-    "axis2": null,
-    "choices": [
-      {
-        "text": "アラームを止めるついでにスマホいじる",
-        "fit": 10,
-        "understand": 8
-      },
-      {
-        "text": "カーテンを開ける",
-        "fit": 5,
-        "understand": 7
-      },
-      {
-        "text": "時間を見て、寝れるだけ寝る",
-        "fit": 4,
-        "understand": 6
-      }
-    ]
-  },
-  {
-    "no": 2,
-    "q": "歯磨きするとき、何を考える？",
-    "axis1": "shusei",
-    "axis2": null,
-    "choices": [
-      {
-        "text": "無心",
-        "fit": 5,
-        "understand": 7
-      },
-      {
-        "text": "スマホいじる、テレビ見る",
-        "fit": 7,
-        "understand": 6
-      },
-      {
-        "text": "奥歯磨けてるかなーとか考える（歯磨きに集中する）",
-        "fit": 9,
-        "understand": 7
-      },
-      {
-        "text": "今日何しようかなとか考える",
-        "fit": 4,
-        "understand": 6
-      }
-    ]
-  },
-  {
-    "no": 3,
-    "q": "ほんのちょっと外出する（買い出しやポスト投函など）。身だしなみはどうしようか。",
-    "axis1": "shusei",
-    "axis2": "shinnen",
-    "choices": [
-      {
-        "text": "しっかり整える",
-        "fit": 4,
-        "understand": 5
-      },
-      {
-        "text": "パジャマのまま。寝ぐせもそのまま",
-        "fit": 6,
-        "understand": 9
-      },
-      {
-        "text": "ある程度の身だしなみはしておく",
-        "fit": 10,
-        "understand": 8
-      },
-      {
-        "text": "気分による",
-        "fit": 0,
-        "understand": 0
-      }
-    ]
-  },
-  {
-    "no": 4,
-    "q": "ふと小さな疑問がでてきた（「例：ブルーハワイ味」ってどういう意味だろう？）。どうする？",
-    "axis1": "kando",
-    "axis2": null,
-    "choices": [
-      {
-        "text": "気にしない",
-        "fit": 0,
-        "understand": 0
-      },
-      {
-        "text": "すぐ調べる",
-        "fit": 3,
-        "understand": 4
-      },
-      {
-        "text": "いったん考えてみる",
-        "fit": 10,
-        "understand": 8
-      },
-      {
-        "text": "調べずに会話のネタとしてとっておく",
-        "fit": 5,
-        "understand": 7
-      }
-    ]
-  },
-  {
-    "no": 5,
-    "q": "1人で受ける大講義。どこに座ろう？",
-    "axis1": "shusei",
-    "axis2": null,
-    "choices": [
-      {
-        "text": "前",
-        "fit": 4,
-        "understand": 6
-      },
-      {
-        "text": "後ろ",
-        "fit": 2,
-        "understand": 2
-      },
-      {
-        "text": "横のほう",
-        "fit": 10,
-        "understand": 8
-      },
-      {
-        "text": "中心らへん",
-        "fit": 3,
-        "understand": 4
-      }
-    ]
-  },
-  {
-    "no": 6,
-    "q": "重めの課題が出た！どうする？",
-    "axis1": "shusei",
-    "axis2": "shinnen",
-    "choices": [
-      {
-        "text": "なるべく早く取り掛かる、少しずつやっておく",
-        "fit": 10,
-        "understand": 8
-      },
-      {
-        "text": "ある日にまとめてやる",
-        "fit": 7,
-        "understand": 7
-      },
-      {
-        "text": "期限ギリギリになって取り組む",
-        "fit": 2,
-        "understand": 2
-      }
-    ]
-  },
-  {
-    "no": 7,
-    "q": "提出した課題に少しミスが見つかった（誤字とか改行ミスとか）。どうする？（点数は講義全体の20%くらい）",
-    "axis1": "shinnen",
-    "axis2": null,
-    "choices": [
-      {
-        "text": "修正して再提出する",
-        "fit": 10,
-        "understand": 8
-      },
-      {
-        "text": "気にしない",
-        "fit": 3,
-        "understand": 4
-      },
-      {
-        "text": "余裕があれば修正する。基本はそのまま。",
-        "fit": 5,
-        "understand": 7
-      }
-    ]
-  },
-  {
-    "no": 8,
-    "q": "夜、バイトやサークルから帰宅した（23時くらい）。おなかは空いてない。どうする？",
-    "axis1": "shusei",
-    "axis2": null,
-    "choices": [
-      {
-        "text": "すぐ風呂に入る",
-        "fit": 10,
-        "understand": 8
-      },
-      {
-        "text": "いったんくつろぐ",
-        "fit": 7,
-        "understand": 6
-      },
-      {
-        "text": "寝落ちしてまう時もある",
-        "fit": 0,
-        "understand": 0
-      }
-    ]
-  },
-  {
-    "no": 9,
-    "q": "入浴中、「シャンプーしたっけ？」ってなる時がある？",
-    "axis1": "shusei",
-    "axis2": null,
-    "choices": [
-      {
-        "text": "あるある",
-        "fit": 5,
-        "understand": 7
-      },
-      {
-        "text": "ときどきある（週1とか）",
-        "fit": 10,
-        "understand": 8
-      },
-      {
-        "text": "あまりない（月1回とか）",
-        "fit": 5,
-        "understand": 7
-      },
-      {
-        "text": "絶対にない",
-        "fit": 2,
-        "understand": 3
-      }
-    ]
-  },
-  {
-    "no": 10,
-    "q": "そろそろ寝ようかな、、、",
-    "axis1": "shusei",
-    "axis2": null,
-    "choices": [
-      {
-        "text": "明日の予定を確認する",
-        "fit": 3,
-        "understand": 8
-      },
-      {
-        "text": "いつも通りの時間にアラームをセットする",
-        "fit": 10,
-        "understand": 8
-      },
-      {
-        "text": "気付いたら寝ている",
-        "fit": 4,
-        "understand": 6
-      }
-    ]
-  },
-  {
-    "no": 11,
-    "q": "寝たいのに寝れない。どうしよう。",
-    "axis1": "shusei",
-    "axis2": null,
-    "choices": [
-      {
-        "text": "目を閉じてがんばる",
-        "fit": 10,
-        "understand": 8
-      },
-      {
-        "text": "ボーっとして眠くなるのを待つ",
-        "fit": 5,
-        "understand": 7
-      },
-      {
-        "text": "スマホを見る",
-        "fit": 4,
-        "understand": 6
-      },
-      {
-        "text": "もぞもぞする",
-        "fit": 4,
-        "understand": 6
-      }
-    ]
-  },
-  {
-    "no": 12,
-    "q": "友人と旅行に行く。どこに行こう？（心地のいい気候）",
-    "axis1": "kando",
-    "axis2": null,
-    "choices": [
-      {
-        "text": "山や森など",
-        "fit": 5,
-        "understand": 7
-      },
-      {
-        "text": "海や海岸",
-        "fit": 10,
-        "understand": 8
-      },
-      {
-        "text": "街中、都会",
-        "fit": 2,
-        "understand": 3
-      },
-      {
-        "text": "癖が強めなところ（神社とか？）",
-        "fit": 6,
-        "understand": 8
-      }
-    ]
-  },
-  {
-    "no": 13,
-    "q": "旅行先でおいしそうな飲食店に入った。思ったより値段が高い、、、",
-    "axis1": "shinnen",
-    "axis2": null,
-    "choices": [
-      {
-        "text": "気にせず払って、その土地ならではの（質の高い）ものを食べる",
-        "fit": 10,
-        "understand": 8
-      },
-      {
-        "text": "極力安いものを見つける（どこでも食べられるもの）",
-        "fit": 2,
-        "understand": 2
-      },
-      {
-        "text": "コスパを重視する。あくまで「その土地ならでは」を考える。",
-        "fit": 5,
-        "understand": 7
-      }
-    ]
-  },
-  {
-    "no": 14,
-    "q": "ホテルに到着。部屋のお風呂に入る。何番目がいい？",
-    "axis1": "kyorikan",
-    "axis2": "shinnen",
-    "choices": [
-      {
-        "text": "1番目",
-        "fit": 5,
-        "understand": 7
-      },
-      {
-        "text": "2番目",
-        "fit": 2,
-        "understand": 2
-      },
-      {
-        "text": "3番目",
-        "fit": 6,
-        "understand": 9
-      },
-      {
-        "text": "こだわりはない",
-        "fit": 10,
-        "understand": 9
-      }
-    ]
-  },
-  {
-    "no": 15,
-    "q": "旅行先で寝る前までの時間、どうしたい？",
-    "axis1": "kyorikan",
-    "axis2": null,
-    "choices": [
-      {
-        "text": "語り合ってみる",
-        "fit": 10,
-        "understand": 8
-      },
-      {
-        "text": "すぐ寝る",
-        "fit": 0,
-        "understand": 0
-      },
-      {
-        "text": "ゲームとかする",
-        "fit": 5,
-        "understand": 7
-      },
-      {
-        "text": "外出してみる",
-        "fit": 4,
-        "understand": 6
-      }
-    ]
-  },
-  {
-    "no": 16,
-    "q": "温泉宿での朝。どうしたい？",
-    "axis1": "shusei",
-    "axis2": null,
-    "choices": [
-      {
-        "text": "朝風呂は絶対に入る",
-        "fit": 10,
-        "understand": 8
-      },
-      {
-        "text": "朝風呂に入りたいと思うけど寝てしまう",
-        "fit": 4,
-        "understand": 5
-      },
-      {
-        "text": "寝ていたい",
-        "fit": 2,
-        "understand": 2
-      },
-      {
-        "text": "目覚めの気分による",
-        "fit": 2,
-        "understand": 2
-      }
-    ]
-  },
-  {
-    "no": 17,
-    "q": "バドミントンでダブルスのペアを組む。",
-    "axis1": "kyorikan",
-    "axis2": null,
-    "choices": [
-      {
-        "text": "自分が引っ張りたい",
-        "fit": 10,
-        "understand": 8
-      },
-      {
-        "text": "キャリーしてほしい",
-        "fit": 5,
-        "understand": 7
-      },
-      {
-        "text": "同じくらいの実力がいい",
-        "fit": 5,
-        "understand": 7
-      },
-      {
-        "text": "こだわりはない",
-        "fit": 2,
-        "understand": 3
-      }
-    ]
-  },
-  {
-    "no": 18,
-    "q": "こっち側のコート見にくいなあ。トスで勝ったらどうする？（ダブルス、3ゲーム）",
-    "axis1": "kyorikan",
-    "axis2": null,
-    "choices": [
-      {
-        "text": "見やすい方を選ぶ",
-        "fit": 5,
-        "understand": 7
-      },
-      {
-        "text": "いつも通り",
-        "fit": 10,
-        "understand": 8
-      },
-      {
-        "text": "ペアに判断を任せる",
-        "fit": 3,
-        "understand": 6
-      }
-    ]
-  },
-  {
-    "no": 19,
-    "q": "けっこう大事な試合のインターバル。ペアとどうしたい？",
-    "axis1": "kyorikan",
-    "axis2": "kando",
-    "choices": [
-      {
-        "text": "戦略的なことを語り合いたい",
-        "fit": 5,
-        "understand": 7
-      },
-      {
-        "text": "マインド面で語り合いたい",
-        "fit": 3,
-        "understand": 4
-      },
-      {
-        "text": "どっちも語り合いたい",
-        "fit": 10,
-        "understand": 9
-      },
-      {
-        "text": "ペアに任せる",
-        "fit": 0,
-        "understand": 0
-      }
-    ]
-  },
-  {
-    "no": 20,
-    "q": "あまり話したことがない人とペアになった。どうする？",
-    "axis1": "kyorikan",
-    "axis2": null,
-    "choices": [
-      {
-        "text": "いつも通り",
-        "fit": 10,
-        "understand": 8
-      },
-      {
-        "text": "いつもより話すようにする",
-        "fit": 6,
-        "understand": 9
-      },
-      {
-        "text": "いつもより口数は減る",
-        "fit": 2,
-        "understand": 2
-      },
-      {
-        "text": "相手の顔色をうかがう",
-        "fit": 2,
-        "understand": 2
-      }
-    ]
-  },
-  {
-    "no": 21,
-    "q": "白熱した試合。ペア（白木）のミスが続いている。",
-    "axis1": "kyorikan",
-    "axis2": "kando",
-    "choices": [
-      {
-        "text": "気にしない",
-        "fit": 3,
-        "understand": 4
-      },
-      {
-        "text": "とにかく励ます",
-        "fit": 10,
-        "understand": 9
-      },
-      {
-        "text": "「自分が頑張らないと」と思う",
-        "fit": 5,
-        "understand": 8
-      },
-      {
-        "text": "イライラするが隠す。口数は減る。",
-        "fit": 0,
-        "understand": 0
-      }
-    ]
-  },
-  {
-    "no": 22,
-    "q": "良い試合ではあったが負けてまった、、、",
-    "axis1": "kyorikan",
-    "axis2": "kando",
-    "choices": [
-      {
-        "text": "反省会する",
-        "fit": 6,
-        "understand": 8
-      },
-      {
-        "text": "励まし合う",
-        "fit": 10,
-        "understand": 8
-      },
-      {
-        "text": "切り替える、引きずらない",
-        "fit": 3,
-        "understand": 5
-      },
-      {
-        "text": "相手を褒める",
-        "fit": 5,
-        "understand": 7
-      }
-    ]
-  },
-  {
-    "no": 23,
-    "q": "団体戦。他のメンバーが試合をしている（次は自分たちが試合）。一番何にフォーカスする？",
-    "axis1": "shinnen",
-    "axis2": "kyorikan",
-    "choices": [
-      {
-        "text": "応援に徹する",
-        "fit": 10,
-        "understand": 8
-      },
-      {
-        "text": "相手の弱点を探す",
-        "fit": 6,
-        "understand": 6
-      },
-      {
-        "text": "味方の弱点を探す",
-        "fit": 5,
-        "understand": 7
-      },
-      {
-        "text": "自分の試合の準備に集中する",
-        "fit": 0,
-        "understand": 0
-      }
-    ]
-  },
-  {
-    "no": 24,
-    "q": "白木と同じ授業を取っていることに気づいた（講義室で発見した）。白木は３人席の端に1人でいる。どこに座ろう？",
-    "axis1": "kyorikan",
-    "axis2": null,
-    "choices": [
-      {
-        "text": "隣",
-        "fit": 6,
-        "understand": 9
-      },
-      {
-        "text": "白木の後ろ",
-        "fit": 10,
-        "understand": 8
-      },
-      {
-        "text": "離れたところ",
-        "fit": 2,
-        "understand": 2
-      },
-      {
-        "text": "白木の前",
-        "fit": 4,
-        "understand": 6
-      }
-    ]
-  },
-  {
-    "no": 25,
-    "q": "バイト終わりの友人（同じ講義を取っていたら話すくらいの関係）を見つけた。",
-    "axis1": "kyorikan",
-    "axis2": null,
-    "choices": [
-      {
-        "text": "話しかける",
-        "fit": 2,
-        "understand": 9
-      },
-      {
-        "text": "そっとしておく",
-        "fit": 3,
-        "understand": 4
-      },
-      {
-        "text": "気付いていないふりをする",
-        "fit": 10,
-        "understand": 0
-      },
-      {
-        "text": "離れる",
-        "fit": 4,
-        "understand": 3
-      }
-    ]
-  },
-  {
-    "no": 26,
-    "q": "講義のグループワーク。全員初対面。どうしよう。",
-    "axis1": "kyorikan",
-    "axis2": null,
-    "choices": [
-      {
-        "text": "自分から話す",
-        "fit": 10,
-        "understand": 9
-      },
-      {
-        "text": "誰かが話すのを待つ",
-        "fit": 2,
-        "understand": 2
-      },
-      {
-        "text": "人による（第一印象とかで判断）。",
-        "fit": 3,
-        "understand": 4
-      }
-    ]
-  },
-  {
-    "no": 27,
-    "q": "どんな作品（映画やドラマ、アニメ）で泣きやすい？",
-    "axis1": "kando",
-    "axis2": null,
-    "choices": [
-      {
-        "text": "家族愛",
-        "fit": 10,
-        "understand": 8
-      },
-      {
-        "text": "恋",
-        "fit": 4,
-        "understand": 5
-      },
-      {
-        "text": "努力",
-        "fit": 7,
-        "understand": 7
-      },
-      {
-        "text": "友情",
-        "fit": 2,
-        "understand": 3
-      }
-    ]
-  },
-  {
-    "no": 28,
-    "q": "突然予定（3時間ほど）がなくなった。どうする？",
-    "axis1": "shusei",
-    "axis2": null,
-    "choices": [
-      {
-        "text": "外出する",
-        "fit": 10,
-        "understand": 8
-      },
-      {
-        "text": "寝る",
-        "fit": 2,
-        "understand": 2
-      },
-      {
-        "text": "家でテレビ見るなどしてくつろぐ",
-        "fit": 4,
-        "understand": 5
-      },
-      {
-        "text": "誰かに連絡する",
-        "fit": 2,
-        "understand": 8
-      }
-    ]
-  },
-  {
-    "no": 29,
-    "q": "1日フリー。やらなければならない課題がある。2~3時間くらいはかかりそう。",
-    "axis1": "shusei",
-    "axis2": "shinnen",
-    "choices": [
-      {
-        "text": "朝からやる",
-        "fit": 10,
-        "understand": 8
-      },
-      {
-        "text": "少しくつろいで昼からやる",
-        "fit": 5,
-        "understand": 6
-      },
-      {
-        "text": "夕方や夜からやる",
-        "fit": 1,
-        "understand": 1
-      },
-      {
-        "text": "今日はくつろぎに徹する",
-        "fit": 0,
-        "understand": 0
-      }
-    ]
-  },
-  {
-    "no": 30,
-    "q": "友人と2人でご飯を食べる。自分は麺類の気分、友人はご飯の気分らしい。",
-    "axis1": "kyorikan",
-    "axis2": "shinnen",
-    "choices": [
-      {
-        "text": "自分の意見を通す",
-        "fit": 3,
-        "understand": 9
-      },
-      {
-        "text": "相手に合わせる",
-        "fit": 10,
-        "understand": 8
-      },
-      {
-        "text": "うまいこと折衷案を見つける",
-        "fit": 5,
-        "understand": 9
-      }
-    ]
-  },
-  {
-    "no": 31,
-    "q": "旅行で沖縄に行くことになった。あとはどうしよう。",
-    "axis1": "shusei",
-    "axis2": null,
-    "choices": [
-      {
-        "text": "計画を綿密に立てる（観光地やご飯の場所なども）",
-        "fit": 10,
-        "understand": 8
-      },
-      {
-        "text": "旅行当日のノリに任せる",
-        "fit": 0,
-        "understand": 1
-      },
-      {
-        "text": "行きたい観光地やランドマークのみ考える",
-        "fit": 4,
-        "understand": 5
-      }
-    ]
-  },
-  {
-    "no": 32,
-    "q": "大事なのは？",
-    "axis1": "shinnen",
-    "axis2": "kando",
-    "choices": [
-      {
-        "text": "愛、友情",
-        "fit": 10,
-        "understand": 8
-      },
-      {
-        "text": "努力、継続",
-        "fit": 3,
-        "understand": 5
-      },
-      {
-        "text": "効率",
-        "fit": 2,
-        "understand": 4
-      },
-      {
-        "text": "「今」の楽しさ",
-        "fit": 5,
-        "understand": 7
-      }
-    ]
-  }
-];
-
-const TYPES = [
-  {
-    "code": "HHHH",
-    "name": "白木颯人",
-    "feature": "価値観も生活リズムも距離感も感性も、白木本人とほぼ重なっている。あなたは白木颯人です。",
-    "relation": "説明不要。お互いに「わかりすぎて逆に新鮮味がない」と感じる瞬間があるかもしれない。僕は嬉しいけどね。",
-    "strength": "白木の考えを先読みできるので、頼れる存在として重宝される。これからもよろしくお願いします。",
-    "caution": "似すぎているとぶつかる時は本気で衝突する。逃げ場がない。ただ、関係は衝突を繰り返して成長する。",
-    "recommend": "たまにはあえて違う意見をぶつけてみよう。新しい一面が見えるかも。"
-  },
-  {
-    "code": "HHHL",
-    "name": "兄　白木翔大",
-    "feature": "価値観・生活リズム・距離感はしっくりくるが、心が動くポイントだけ少しズレている。実際、私とうちの兄はかなり趣味が違います。",
-    "relation": "兄弟のような自然な近さ。一緒にいて疲れないタイプ。もしかしたら親戚かもしれない。",
-    "strength": "普段のやり取りはほぼノーストレス。安定した関係を築ける。一緒にいると白木は兄の姿を思い出すかも。",
-    "caution": "感動ポイントが違うので、盛り上がる映画や話題で温度差が出ることも。",
-    "recommend": "白木が泣いたポイントを聞いてみると、意外な発見があるはず。お互いの趣味を尊重していこう。"
-  },
-  {
-    "code": "HHLH",
-    "name": "母　白木貴子",
-    "feature": "価値観・生活リズム・感性は近いが、距離の詰め方だけ独特。見守るような関わり方になりやすい。まさに私の母。",
-    "relation": "安心感はあるが、踏み込みどころが少しズレる。1970年生まれだから仕方がない。ジェネレーションギャップ。",
-    "strength": "白木を急かさず自然体で受け止められる。一緒にいると僕は居心地の良さを感じるかもしれません。",
-    "caution": "距離を詰めきれず、関係が停滞する可能性も。反抗期かもしれません。長い目で見守りましょう。",
-    "recommend": "思い切って一歩踏み込んでみると、一気に距離が縮まるタイプ。何事も思い切ることが大切。思いきることで道は開ける。"
-  },
-  {
-    "code": "HHLL",
-    "name": "表白木",
-    "feature": "価値観と生活リズムは重なるが、対人スタイルと感性は完全に独立している。まさに表面は白木といえる？",
-    "relation": "理屈でつながる相棒。ノリより中身で分かり合える。語り合いを通すことでさらなる関係の向上につながりそう。",
-    "strength": "話が早い。効率重視な会話ができる。よきパートナーだともいえる。これからもよろしくお願いします。",
-    "caution": "感情面のすれ違いに気づきにくい。理屈で分かち合うからこそかもしれない。",
-    "recommend": "たまには非効率でも、感情の共有を大事にしてみて。語り合う機会を設けましょう。ご飯とか行きますか？"
-  },
-  {
-    "code": "HLHH",
-    "name": "メタ白木モン",
-    "feature": "価値観・距離感・感性は近いが、生活の型（習慣）だけ全然違う。中身は似ているのに動き方がバラバラ。まるで白木に擬態したメタモン。つまりメタ白木モン。",
-    "relation": "話は合うのに生活リズムが噛み合わず、すれ違いがち。僕と同棲するのには向いていないかも。",
-    "strength": "本質的な部分での相互理解は深い。つまり、深い語り合いができる可能性大。いつか話し合いましょう。",
-    "caution": "予定調整で苦労することが多そう。僕は計画とかを立てるのを好みます。",
-    "recommend": "スケジュールをこまめに共有すると関係がスムーズになる。逆に計画を立てるのなら任せてください。そこがかみ合えば完璧かも。"
-  },
-  {
-    "code": "HLHL",
-    "name": "コミュ白木",
-    "feature": "価値観と距離感の取り方だけが白木と一致。生活と感性は違う。人との関わり方が白木、つまりコミュ白木。",
-    "relation": "関わり方の相性だけで持っている関係。一緒にいて話がかみ合ったり、ノリが合ったりすることが多そう。",
-    "strength": "どんな空気でも自然に会話を回せる。困難に直面したときも話合うことができそう。",
-    "caution": "話題が合わず、沈黙が気まずくなる場面もあるかも。ただ、その分合うネタが見つかると非常に強い。",
-    "recommend": "共通の趣味を1つ見つけると関係が安定する。同じネタならいくらでもこすっても大丈夫！"
-  },
-  {
-    "code": "HLLH",
-    "name": "エクスタシーらき",
-    "feature": "価値観と感性だけが白木と重なる。生活リズムと距離感は独立している。エクスタシー（快感が最高潮に達してうっとりする状態）に遭遇する場面は同じかも。",
-    "relation": "感じ方だけで妙に通じ合う、不思議な関係性。心と心の関係といえる。",
-    "strength": "感動を分かち合える瞬間の共鳴度が高い。瞬間火力は異常なほど。そういう状況に直面すると関係がグッと縮まるかも。",
-    "caution": "日常の関わり方はズレがち。会う頻度や距離感で衝突しやすい。",
-    "recommend": "感性で繋がれる話題（映画や音楽）を軸に関係を育てよう。あまり僕は音楽とかは聞かないですが、おすすめがあれば教えてください。"
-  },
-  {
-    "code": "HLLL",
-    "name": "白木マインド",
-    "feature": "価値観だけが一致。生活・距離感・感性はすべて違う。信念だけで繋がる硬派なタイプ。白木とは心と心でつながっているかも。",
-    "relation": "表面的な相性は良くないかもしれないが、根っこの部分では信頼できる。人生観などは僕と共通している部分が多そう。",
-    "strength": "ここぞという時の判断基準が一致する。いざという時に頼れる。頼りにしています。",
-    "caution": "日常のノリや会話は噛み合いにくいかも？",
-    "recommend": "大事な場面で手を組んでこそ2人の強みが発揮される。かみ合った時の爆発力が魅力的。"
-  },
-  {
-    "code": "LHHH",
-    "name": "しらこはやと",
-    "feature": "生活・距離感・感性は近いのに、根本の価値観だけ違う。ノリは合うのに、たまに根っこでぶつかる。",
-    "relation": "普段は仲良しだが、大事な話になると意見が割れる。",
-    "strength": "一緒にいて楽しい、テンポの良い関係。",
-    "caution": "価値観がぶつかった時は、ちゃんと話し合うことが大事。",
-    "recommend": "意見が割れた時こそ、腰を据えて話し合ってみて。"
-  },
-  {
-    "code": "LHHL",
-    "name": "はやぴー",
-    "feature": "生活リズムと距離感は合うが、価値観と感性はズレている。表面的にはすごく仲良く見えるタイプ。",
-    "relation": "周りから見ると仲良しコンビ、でも深い部分はあまり共有していない。",
-    "strength": "一緒にいて気楽。負担の少ない関係。",
-    "caution": "本音を話す機会が少なく、関係が浅いまま固定されがち。",
-    "recommend": "たまには本音や将来の話をしてみると、意外な発見があるかも。"
-  },
-  {
-    "code": "LHLH",
-    "name": "エア白木",
-    "feature": "生活リズムと感性は近いが、価値観と距離感は独立。同じ空気を吸っているのに近づき方が違う。",
-    "relation": "無理に距離を詰めなくても、自然体でいられる関係。",
-    "strength": "無理に合わせなくても心地よい距離感を保てる。",
-    "caution": "関係を深めるきっかけは、自分から作る必要があるかも。",
-    "recommend": "共通の生活リズムを活かして、一緒に何かする時間を増やしてみよう。"
-  },
-  {
-    "code": "LHLL",
-    "name": "しライフき颯人",
-    "feature": "生活リズムだけが一致。価値観・距離感・感性はすべて違う。習慣だけで成立する腐れ縁タイプ。",
-    "relation": "気づけば同じタイミングで動いている、不思議な縁。",
-    "strength": "生活面での連携は取りやすい。",
-    "caution": "深い話や感情面での共有は少なめ。",
-    "recommend": "生活リズムが合う強みを活かして、まずは気軽に誘ってみよう。"
-  },
-  {
-    "code": "LLHH",
-    "name": "裏白木",
-    "feature": "距離感と感性は近いが、価値観も生活リズムも真逆。感覚だけで分かり合える系。",
-    "relation": "理屈は合わないのに、なぜか居心地がいい。",
-    "strength": "言葉にしなくても伝わる空気感がある。",
-    "caution": "肝心なところで価値観がぶつかりやすい。",
-    "recommend": "感覚的な繋がりを大事にしつつ、価値観の違いは無理に埋めなくてOK。"
-  },
-  {
-    "code": "LLHL",
-    "name": "SHIRAKIN",
-    "feature": "距離感だけが白木と一致。他はすべて違う。なぜか居心地はいいタイプ。",
-    "relation": "理由はわからないけど一緒にいて楽。",
-    "strength": "程よい距離感を自然に保てる。",
-    "caution": "共通点が少ないので、関係が深まりにくい。",
-    "recommend": "居心地の良さを武器に、少しずつ共通の話題を増やしてみて。"
-  },
-  {
-    "code": "LLLH",
-    "name": "ほろり白木",
-    "feature": "感性だけが一致。他はすべて違う。同じ場面で泣ける、それだけで繋がっている。",
-    "relation": "普段はあまり噛み合わないが、感動する瞬間だけシンクロする。",
-    "strength": "ここぞという場面での共感力は誰よりも高い。",
-    "caution": "日常会話や価値観ではすれ違いやすい。",
-    "recommend": "感動を共有できる映画や物語を一緒に楽しんでみよう。"
-  },
-  {
-    "code": "LLLL",
-    "name": "黒石遅斗",
-    "feature": "全軸で白木と真逆。価値観も生活も距離感も感性も、何もかもが対極に位置する。",
-    "relation": "噛み合う要素は少なめだけど、それはそれで新しい発見に繋がるはず。",
-    "strength": "白木にない発想や視点を持っている。逆に新鮮な存在になれる。",
-    "caution": "無理に合わせようとすると疲れてしまう。",
-    "recommend": "違いを面白がれる関係を目指そう。真逆だからこそ見える世界がある。"
-  }
-];
-
-/* ====== STATE ====== */
-let current = 0;
-const answers = new Array(QUESTIONS.length).fill(null); // {fit, understand, axis1, axis2}
-
-/* ====== ELEMENTS ====== */
-const screenIntro = document.getElementById("screen-intro");
-const screenQuestion = document.getElementById("screen-question");
-const screenResult = document.getElementById("screen-result");
-
-const qCurrentEl = document.getElementById("q-current");
-const qProgressFill = document.getElementById("q-progress-fill");
-const qTextEl = document.getElementById("q-text");
-const qOptionsEl = document.getElementById("q-options");
-const btnBack = document.getElementById("btn-back");
-
-document.getElementById("q-total-label").textContent = "/ " + QUESTIONS.length;
-
-/* ====== NAV ====== */
-document.getElementById("btn-start").addEventListener("click", () => {
-  screenIntro.classList.add("hidden");
-  screenQuestion.classList.remove("hidden");
-  current = 0;
-  renderQuestion();
-});
-
-btnBack.addEventListener("click", () => {
-  if (current > 0) {
-    current -= 1;
-    renderQuestion();
-  }
-});
-
-function renderQuestion(){
-  const q = QUESTIONS[current];
-  qCurrentEl.textContent = "Q" + (current + 1);
-  qProgressFill.style.width = Math.round((current / QUESTIONS.length) * 100) + "%";
-
-  qTextEl.textContent = q.q;
-
-  qOptionsEl.innerHTML = "";
-  q.choices.forEach((choice) => {
-    const btn = document.createElement("button");
-    btn.className = "qoption";
-    btn.textContent = choice.text;
-    btn.addEventListener("click", () => selectChoice(choice));
-    qOptionsEl.appendChild(btn);
-  });
-
-  btnBack.style.visibility = current === 0 ? "hidden" : "visible";
-  window.scrollTo({top:0, behavior:"instant" in window ? "instant" : "auto"});
-}
-
-function selectChoice(choice){
-  answers[current] = choice;
-  const q = QUESTIONS[current];
-  if (current < QUESTIONS.length - 1){
-    current += 1;
-    renderQuestion();
-  } else {
-    finishDiagnosis();
-  }
-}
-
-/* ====== SCORING ====== */
-function finishDiagnosis(){
-  let fitSum = 0, undSum = 0, fitCount = 0;
-  const axisSum = { shinnen:0, shusei:0, kyorikan:0, kando:0 };
-  const axisCount = { shinnen:0, shusei:0, kyorikan:0, kando:0 };
-
-  QUESTIONS.forEach((q, i) => {
-    const a = answers[i];
-    if (!a) return;
-    fitSum += a.fit;
-    undSum += a.understand;
-    fitCount += 1;
-
-    axisSum[q.axis1] += a.fit;
-    axisCount[q.axis1] += 1;
-    if (q.axis2){
-      axisSum[q.axis2] += a.fit;
-      axisCount[q.axis2] += 1;
+      btnBack.style.visibility = current === 0 ? "hidden" : "visible";
+      window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
     }
-  });
 
-  const fitPct = Math.round((fitSum / (fitCount * 10)) * 100);
-  const undPct = Math.round((undSum / (fitCount * 10)) * 100);
+    function selectChoice(choice) {
+      answers[current] = choice;
+      const q = QUESTIONS[current];
+      if (current < QUESTIONS.length - 1) {
+        current += 1;
+        renderQuestion();
+      } else {
+        finishDiagnosis();
+      }
+    }
 
-  const axisPct = {};
-  const axisLetter = {};
-  ["shinnen","shusei","kyorikan","kando"].forEach((k) => {
-    const avg = axisCount[k] > 0 ? axisSum[k] / axisCount[k] : 0;
-    axisPct[k] = Math.round((avg / 10) * 100);
-    axisLetter[k] = avg >= 5 ? "H" : "L";
-  });
+    /* ====== SCORING ====== */
+    function finishDiagnosis() {
+      let fitSum = 0, undSum = 0, fitCount = 0;
+      const axisSum = { shinnen: 0, shusei: 0, kyorikan: 0, kando: 0 };
+      const axisCount = { shinnen: 0, shusei: 0, kyorikan: 0, kando: 0 };
 
-  const code = axisLetter.shinnen + axisLetter.shusei + axisLetter.kyorikan + axisLetter.kando;
-  const type = TYPES.find(t => t.code === code) || TYPES[0];
+      QUESTIONS.forEach((q, i) => {
+        const a = answers[i];
+        if (!a) return;
+        fitSum += a.fit;
+        undSum += a.understand;
+        fitCount += 1;
 
-  renderResult({ fitPct, undPct, axisPct, type });
-}
+        axisSum[q.axis1] += a.fit;
+        axisCount[q.axis1] += 1;
+        if (q.axis2) {
+          axisSum[q.axis2] += a.fit;
+          axisCount[q.axis2] += 1;
+        }
+      });
 
-function renderResult({ fitPct, undPct, axisPct, type }){
-  screenQuestion.classList.add("hidden");
-  screenResult.classList.remove("hidden");
+      const fitPct = Math.round((fitSum / (fitCount * 10)) * 100);
+      const undPct = Math.round((undSum / (fitCount * 10)) * 100);
 
-  document.getElementById("res-typecode").textContent = "TYPE " + type.code;
-  document.getElementById("res-name").textContent = type.name;
-  document.getElementById("res-feature").textContent = type.feature;
-  document.getElementById("res-fit").textContent = fitPct;
-  document.getElementById("res-und").textContent = undPct;
+      const axisPct = {};
+      const axisLetter = {};
+      ["shinnen", "shusei", "kyorikan", "kando"].forEach((k) => {
+        const avg = axisCount[k] > 0 ? axisSum[k] / axisCount[k] : 0;
+        axisPct[k] = Math.round((avg / 10) * 100);
+        axisLetter[k] = avg >= 5 ? "H" : "L";
+      });
 
-  ["shinnen","shusei","kyorikan","kando"].forEach((k) => {
-    document.getElementById("bar-" + k).style.width = axisPct[k] + "%";
-    document.getElementById("val-" + k).textContent = axisPct[k];
-  });
+      const code = axisLetter.shinnen + axisLetter.shusei + axisLetter.kyorikan + axisLetter.kando;
+      const type = TYPES.find(t => t.code === code) || TYPES[0];
 
-  document.getElementById("res-relation").textContent = type.relation;
-  document.getElementById("res-strength").textContent = type.strength;
-  document.getElementById("res-caution").textContent = type.caution;
-  document.getElementById("res-recommend").textContent = type.recommend;
+      renderResult({ fitPct, undPct, axisPct, type });
+    }
 
-  window.__lastResult = { fitPct, undPct, axisPct, type };
-  window.scrollTo({top:0, behavior:"instant" in window ? "instant" : "auto"});
-}
+    function renderResult({ fitPct, undPct, axisPct, type }) {
+      screenQuestion.classList.add("hidden");
+      screenResult.classList.remove("hidden");
 
-/* ====== SHARE (copy text) ====== */
-document.getElementById("btn-share").addEventListener("click", async () => {
-  const r = window.__lastResult;
-  if (!r) return;
-  const text =
-`【白木適合度診断】
+      document.getElementById("res-typecode").textContent = "TYPE " + type.code;
+      document.getElementById("res-name").textContent = type.name;
+      document.getElementById("res-feature").textContent = type.feature;
+      document.getElementById("res-fit").textContent = fitPct;
+      document.getElementById("res-und").textContent = undPct;
+
+      ["shinnen", "shusei", "kyorikan", "kando"].forEach((k) => {
+        document.getElementById("bar-" + k).style.width = axisPct[k] + "%";
+        document.getElementById("val-" + k).textContent = axisPct[k];
+      });
+
+      document.getElementById("res-relation").textContent = type.relation;
+      document.getElementById("res-strength").textContent = type.strength;
+      document.getElementById("res-caution").textContent = type.caution;
+      document.getElementById("res-recommend").textContent = type.recommend;
+
+      window.__lastResult = { fitPct, undPct, axisPct, type };
+      window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
+    }
+
+    /* ====== SHARE (copy text) ====== */
+    document.getElementById("btn-share").addEventListener("click", async () => {
+      const r = window.__lastResult;
+      if (!r) return;
+      const text =
+        `【白木適合度診断】
 ${r.type.name} (TYPE ${r.type.code})
 
 白木適合度: ${r.fitPct}%
@@ -1738,101 +1848,102 @@ ${r.type.name} (TYPE ${r.type.code})
 
 信念: ${r.axisPct.shinnen} / 習性: ${r.axisPct.shusei} / 距離感: ${r.axisPct.kyorikan} / 感度: ${r.axisPct.kando}`;
 
-  try{
-    await navigator.clipboard.writeText(text);
-    showToast("結果をコピーしました");
-  }catch(e){
-    // フォールバック
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    ta.style.position = "fixed";
-    ta.style.opacity = "0";
-    document.body.appendChild(ta);
-    ta.select();
-    try{ document.execCommand("copy"); showToast("結果をコピーしました"); }
-    catch(err){ showToast("コピーに失敗しました"); }
-    document.body.removeChild(ta);
-  }
-});
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast("結果をコピーしました");
+      } catch (e) {
+        // フォールバック
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand("copy"); showToast("結果をコピーしました"); }
+        catch (err) { showToast("コピーに失敗しました"); }
+        document.body.removeChild(ta);
+      }
+    });
 
-document.getElementById("btn-retry").addEventListener("click", () => {
-  answers.fill(null);
-  current = 0;
-  screenResult.classList.add("hidden");
-  screenIntro.classList.remove("hidden");
-  window.scrollTo({top:0, behavior:"instant" in window ? "instant" : "auto"});
-});
+    document.getElementById("btn-retry").addEventListener("click", () => {
+      answers.fill(null);
+      current = 0;
+      screenResult.classList.add("hidden");
+      screenIntro.classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
+    });
 
-function showToast(msg){
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 1800);
-}
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 1800);
+    }
 
-/* ====== DEBUG MODE (URL: ?debug=1) ====== */
-const screenDebug = document.getElementById("screen-debug");
-const isDebug = new URLSearchParams(window.location.search).get("debug") === "1";
-let cameFromDebug = false;
+    /* ====== DEBUG MODE (URL: ?debug=1) ====== */
+    const screenDebug = document.getElementById("screen-debug");
+    const isDebug = new URLSearchParams(window.location.search).get("debug") === "1";
+    let cameFromDebug = false;
 
-if (isDebug){
-  document.getElementById("debug-entry").classList.remove("hidden");
-}
+    if (isDebug) {
+      document.getElementById("debug-entry").classList.remove("hidden");
+    }
 
-document.getElementById("debug-entry").addEventListener("click", () => {
-  showDebugList();
-});
+    document.getElementById("debug-entry").addEventListener("click", () => {
+      showDebugList();
+    });
 
-document.getElementById("debug-back-to-intro").addEventListener("click", () => {
-  screenDebug.classList.add("hidden");
-  screenIntro.classList.remove("hidden");
-});
+    document.getElementById("debug-back-to-intro").addEventListener("click", () => {
+      screenDebug.classList.add("hidden");
+      screenIntro.classList.remove("hidden");
+    });
 
-document.getElementById("btn-back-to-debug").addEventListener("click", () => {
-  screenResult.classList.add("hidden");
-  showDebugList();
-});
+    document.getElementById("btn-back-to-debug").addEventListener("click", () => {
+      screenResult.classList.add("hidden");
+      showDebugList();
+    });
 
-function showDebugList(){
-  screenIntro.classList.add("hidden");
-  screenQuestion.classList.add("hidden");
-  screenResult.classList.add("hidden");
-  screenDebug.classList.remove("hidden");
+    function showDebugList() {
+      screenIntro.classList.add("hidden");
+      screenQuestion.classList.add("hidden");
+      screenResult.classList.add("hidden");
+      screenDebug.classList.remove("hidden");
 
-  const grid = document.getElementById("debug-grid");
-  grid.innerHTML = "";
-  TYPES.forEach((type) => {
-    const btn = document.createElement("button");
-    btn.className = "debug-card";
-    btn.innerHTML = '<div class="code">TYPE ' + type.code + '</div><div class="name">' + type.name + '</div>';
-    btn.addEventListener("click", () => previewType(type));
-    grid.appendChild(btn);
-  });
-  window.scrollTo({top:0, behavior:"instant" in window ? "instant" : "auto"});
-}
+      const grid = document.getElementById("debug-grid");
+      grid.innerHTML = "";
+      TYPES.forEach((type) => {
+        const btn = document.createElement("button");
+        btn.className = "debug-card";
+        btn.innerHTML = '<div class="code">TYPE ' + type.code + '</div><div class="name">' + type.name + '</div>';
+        btn.addEventListener("click", () => previewType(type));
+        grid.appendChild(btn);
+      });
+      window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
+    }
 
-function previewType(type){
-  cameFromDebug = true;
-  const axisPct = {};
-  ["shinnen","shusei","kyorikan","kando"].forEach((k, i) => {
-    const letter = type.code[i];
-    axisPct[k] = letter === "H" ? 85 : 15;
-  });
-  const fitPct = Math.round(
-    (axisPct.shinnen + axisPct.shusei + axisPct.kyorikan + axisPct.kando) / 4
-  );
-  const undPct = fitPct;
+    function previewType(type) {
+      cameFromDebug = true;
+      const axisPct = {};
+      ["shinnen", "shusei", "kyorikan", "kando"].forEach((k, i) => {
+        const letter = type.code[i];
+        axisPct[k] = letter === "H" ? 85 : 15;
+      });
+      const fitPct = Math.round(
+        (axisPct.shinnen + axisPct.shusei + axisPct.kyorikan + axisPct.kando) / 4
+      );
+      const undPct = fitPct;
 
-  screenDebug.classList.add("hidden");
-  renderResult({ fitPct, undPct, axisPct, type });
-  document.getElementById("btn-back-to-debug").classList.remove("hidden");
-}
+      screenDebug.classList.add("hidden");
+      renderResult({ fitPct, undPct, axisPct, type });
+      document.getElementById("btn-back-to-debug").classList.remove("hidden");
+    }
 
-document.getElementById("btn-retry").addEventListener("click", () => {
-  document.getElementById("btn-back-to-debug").classList.add("hidden");
-  cameFromDebug = false;
-});
+    document.getElementById("btn-retry").addEventListener("click", () => {
+      document.getElementById("btn-back-to-debug").classList.add("hidden");
+      cameFromDebug = false;
+    });
 
-</script>
+  </script>
 </body>
+
 </html>
