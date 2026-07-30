@@ -392,6 +392,69 @@
     letter-spacing:.04em;
   }
 
+  /* ---- Debug ---- */
+  .debug-entry{
+    display:block;
+    text-align:center;
+    margin-top:14px;
+    font-size:11.5px;
+    color:var(--muted);
+    text-decoration:underline;
+    cursor:pointer;
+    background:none;
+    border:0;
+    width:100%;
+    font-family:inherit;
+  }
+  .debug-title{
+    font-size:13px;
+    font-weight:700;
+    color:var(--muted);
+    letter-spacing:.06em;
+    margin-bottom:16px;
+  }
+  .debug-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:20px;
+  }
+  .debug-card{
+    text-align:left;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .debug-card:hover{border-color:var(--line-strong);}
+  .debug-card .code{
+    font-size:10.5px;
+    color:var(--muted);
+    font-weight:700;
+    letter-spacing:.04em;
+  }
+  .debug-card .name{
+    font-size:14px;
+    font-weight:700;
+    margin-top:4px;
+    line-height:1.4;
+  }
+  .debug-back{
+    display:block;
+    width:100%;
+    border:1px solid var(--line-strong);
+    background:transparent;
+    color:var(--ink);
+    font-family:inherit;
+    font-weight:700;
+    font-size:13.5px;
+    padding:14px 20px;
+    border-radius:99px;
+    cursor:pointer;
+  }
+
   @media (max-width:380px){
     .intro-axes{grid-template-columns:1fr;}
   }
@@ -438,6 +501,14 @@
     </div>
 
     <button class="btn-start" id="btn-start">診断をはじめる</button>
+    <button class="debug-entry hidden" id="debug-entry">デバッグ: 全タイプ一覧</button>
+  </section>
+
+  <!-- ============ DEBUG LIST ============ -->
+  <section id="screen-debug" class="hidden">
+    <div class="debug-title">全16タイプ プレビュー</div>
+    <div class="debug-grid" id="debug-grid"></div>
+    <button class="debug-back" id="debug-back-to-intro">診断トップに戻る</button>
   </section>
 
   <!-- ============ QUESTION ============ -->
@@ -522,6 +593,7 @@
     <div class="res-actions">
       <button class="btn-share" id="btn-share">結果を共有する</button>
       <button class="btn-retry" id="btn-retry">もう一度診断する</button>
+      <button class="debug-back hidden" id="btn-back-to-debug">デバッグ一覧に戻る</button>
     </div>
   </section>
 
@@ -1385,10 +1457,10 @@ const TYPES = [
   {
     "code": "HHHH",
     "name": "白木颯人",
-    "feature": "価値観も生活リズムも距離感も感性も、白木本人とほぼ重なっている。もはや分身と言っても過言ではない。",
-    "relation": "説明不要。お互いに「わかりすぎて逆に新鮮味がない」と感じる瞬間があるかもしれない。",
-    "strength": "白木の考えを先読みできるので、頼れる存在として重宝される。",
-    "caution": "似すぎているとぶつかる時は本気で衝突する。逃げ場がない。",
+    "feature": "価値観も生活リズムも距離感も感性も、白木本人とほぼ重なっている。あなたは白木颯人です。",
+    "relation": "説明不要。お互いに「わかりすぎて逆に新鮮味がない」と感じる瞬間があるかもしれない。僕は嬉しいけどね。",
+    "strength": "白木の考えを先読みできるので、頼れる存在として重宝される。これからもよろしくお願いします。",
+    "caution": "似すぎているとぶつかる時は本気で衝突する。逃げ場がない。ただ、関係は衝突を繰り返して成長する。",
     "recommend": "たまにはあえて違う意見をぶつけてみよう。新しい一面が見えるかも。"
   },
   {
@@ -1697,6 +1769,70 @@ function showToast(msg){
   t.classList.add("show");
   setTimeout(() => t.classList.remove("show"), 1800);
 }
+
+/* ====== DEBUG MODE (URL: ?debug=1) ====== */
+const screenDebug = document.getElementById("screen-debug");
+const isDebug = new URLSearchParams(window.location.search).get("debug") === "1";
+let cameFromDebug = false;
+
+if (isDebug){
+  document.getElementById("debug-entry").classList.remove("hidden");
+}
+
+document.getElementById("debug-entry").addEventListener("click", () => {
+  showDebugList();
+});
+
+document.getElementById("debug-back-to-intro").addEventListener("click", () => {
+  screenDebug.classList.add("hidden");
+  screenIntro.classList.remove("hidden");
+});
+
+document.getElementById("btn-back-to-debug").addEventListener("click", () => {
+  screenResult.classList.add("hidden");
+  showDebugList();
+});
+
+function showDebugList(){
+  screenIntro.classList.add("hidden");
+  screenQuestion.classList.add("hidden");
+  screenResult.classList.add("hidden");
+  screenDebug.classList.remove("hidden");
+
+  const grid = document.getElementById("debug-grid");
+  grid.innerHTML = "";
+  TYPES.forEach((type) => {
+    const btn = document.createElement("button");
+    btn.className = "debug-card";
+    btn.innerHTML = '<div class="code">TYPE ' + type.code + '</div><div class="name">' + type.name + '</div>';
+    btn.addEventListener("click", () => previewType(type));
+    grid.appendChild(btn);
+  });
+  window.scrollTo({top:0, behavior:"instant" in window ? "instant" : "auto"});
+}
+
+function previewType(type){
+  cameFromDebug = true;
+  const axisPct = {};
+  ["shinnen","shusei","kyorikan","kando"].forEach((k, i) => {
+    const letter = type.code[i];
+    axisPct[k] = letter === "H" ? 85 : 15;
+  });
+  const fitPct = Math.round(
+    (axisPct.shinnen + axisPct.shusei + axisPct.kyorikan + axisPct.kando) / 4
+  );
+  const undPct = fitPct;
+
+  screenDebug.classList.add("hidden");
+  renderResult({ fitPct, undPct, axisPct, type });
+  document.getElementById("btn-back-to-debug").classList.remove("hidden");
+}
+
+document.getElementById("btn-retry").addEventListener("click", () => {
+  document.getElementById("btn-back-to-debug").classList.add("hidden");
+  cameFromDebug = false;
+});
+
 </script>
 </body>
 </html>
