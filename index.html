@@ -154,22 +154,11 @@
     background:var(--ink);
     transition:width .3s ease;
   }
-  .qaxis-chip{
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    font-size:11px;
-    font-weight:700;
-    padding:5px 11px;
-    border-radius:99px;
-    margin-bottom:16px;
-  }
-  .qaxis-chip .dot{width:6px;height:6px;border-radius:50%;}
   .qtext{
     font-size:clamp(1.15rem, 5vw, 1.5rem);
     font-weight:700;
     line-height:1.6;
-    margin:0 0 26px;
+    margin:12px 0 26px;
     white-space:pre-wrap;
   }
   .qoptions{
@@ -461,7 +450,6 @@
       <div class="qprogress-fill" id="q-progress-fill"></div>
     </div>
 
-    <span class="qaxis-chip" id="q-axis-chip"></span>
     <p class="qtext" id="q-text"></p>
     <div class="qoptions" id="q-options"></div>
 
@@ -1059,7 +1047,7 @@ const QUESTIONS = [
         "understand": 9
       },
       {
-        "text": "いつもより口数はる",
+        "text": "いつもより口数は減る",
         "fit": 2,
         "understand": 2
       },
@@ -1540,14 +1528,6 @@ const TYPES = [
   }
 ];
 
-/* ====== AXIS META ====== */
-const AXIS_META = {
-  shinnen:  { label:"信念",   color:"var(--shinnen)",  bg:"var(--shinnen-bg)" },
-  shusei:   { label:"習性",   color:"var(--shusei)",   bg:"var(--shusei-bg)" },
-  kyorikan: { label:"距離感", color:"var(--kyorikan)", bg:"var(--kyorikan-bg)" },
-  kando:    { label:"感度",   color:"var(--kando)",    bg:"var(--kando-bg)" }
-};
-
 /* ====== STATE ====== */
 let current = 0;
 const answers = new Array(QUESTIONS.length).fill(null); // {fit, understand, axis1, axis2}
@@ -1559,7 +1539,6 @@ const screenResult = document.getElementById("screen-result");
 
 const qCurrentEl = document.getElementById("q-current");
 const qProgressFill = document.getElementById("q-progress-fill");
-const qAxisChip = document.getElementById("q-axis-chip");
 const qTextEl = document.getElementById("q-text");
 const qOptionsEl = document.getElementById("q-options");
 const btnBack = document.getElementById("btn-back");
@@ -1585,12 +1564,6 @@ function renderQuestion(){
   const q = QUESTIONS[current];
   qCurrentEl.textContent = "Q" + (current + 1);
   qProgressFill.style.width = Math.round((current / QUESTIONS.length) * 100) + "%";
-
-  const meta = AXIS_META[q.axis1];
-  qAxisChip.textContent = meta.label;
-  qAxisChip.style.color = meta.color;
-  qAxisChip.style.background = meta.bg;
-  qAxisChip.querySelector && null;
 
   qTextEl.textContent = q.q;
 
